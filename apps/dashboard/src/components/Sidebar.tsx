@@ -1,7 +1,18 @@
-﻿import Link from 'next/link';
-import { Home, Phone, Settings, LayoutDashboard } from 'lucide-react';
+'use client';
+import Link from 'next/link';
+import { Home, Phone, Settings, LayoutDashboard, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function Sidebar() {
+  const [role, setRole] = useState<string>('');
+
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    if (user) {
+      setRole(JSON.parse(user).role);
+    }
+  }, []);
+
   return (
     <aside className="w-64 bg-gray-900 text-white min-h-screen flex flex-col">
       <div className="p-6 flex items-center gap-2 font-bold text-xl">
@@ -17,6 +28,12 @@ export default function Sidebar() {
           <Phone className="w-5 h-5" />
           Calls
         </Link>
+        {role === 'SUPER_ADMIN' && (
+          <Link href="/users" className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
+            <Users className="w-5 h-5" />
+            Users
+          </Link>
+        )}
         <Link href="/settings" className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
           <Settings className="w-5 h-5" />
           Settings

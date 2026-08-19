@@ -1,4 +1,4 @@
-﻿import { FastifyInstance } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import bcrypt from 'bcrypt';
 import { prisma } from '@saas-poc/shared';
 
@@ -35,11 +35,12 @@ export default async function authRoutes(fastify: FastifyInstance) {
     const token = fastify.jwt.sign({ 
       id: user.id, 
       email: user.email, 
+      name: user.name,
       role: user.role, 
       tenantId: user.tenantId 
     });
 
-    reply.send({ token, user: { id: user.id, email: user.email, role: user.role } });
+    reply.send({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   });
 
   fastify.post('/login', async (request, reply) => {
@@ -62,10 +63,11 @@ export default async function authRoutes(fastify: FastifyInstance) {
     const token = fastify.jwt.sign({ 
       id: user.id, 
       email: user.email, 
+      name: user.name,
       role: user.role, 
       tenantId: user.tenantId 
     });
 
-    reply.send({ token, user: { id: user.id, email: user.email, role: user.role } });
+    reply.send({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   });
 }
