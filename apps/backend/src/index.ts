@@ -6,6 +6,7 @@ import { prisma } from '@saas-poc/shared';
 import webhookRoutes from './routes/webhooks';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
+import twilioRoutes from './routes/twilio';
 
 const app = fastify({ logger: true });
 
@@ -20,6 +21,11 @@ app.register(jwt, { secret: process.env.JWT_SECRET || 'supersecret' });
 app.register(webhookRoutes, { prefix: '/webhooks' });
 app.register(authRoutes, { prefix: '/auth' });
 app.register(userRoutes, { prefix: '/users' });
+app.register(twilioRoutes, { prefix: '/twilio' });
+
+app.get('/health', async () => {
+  return { status: 'ok', timestamp: new Date().toISOString() };
+});
 
 async function runSeed() {
   const adminEmail = 'admin@admin.com';

@@ -38,6 +38,23 @@ export default function Sidebar() {
           <Settings className="w-5 h-5" />
           Settings
         </Link>
+
+        {role === 'SUPER_ADMIN' && (
+          <>
+            <div className="px-4 mt-8 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Twilio
+            </div>
+            <Link href="/twilio/phone-numbers" className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
+              <Phone className="w-5 h-5" />
+              Phone Numbers
+            </Link>
+
+            <div className="px-4 mt-8 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Vapi
+            </div>
+            {/* Future Vapi links will go here */}
+          </>
+        )}
       </nav>
     </aside>
   );
