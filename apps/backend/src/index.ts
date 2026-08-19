@@ -9,7 +9,12 @@ import userRoutes from './routes/users';
 
 const app = fastify({ logger: true });
 
-app.register(cors);
+app.register(cors, { 
+  origin: true,
+  methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  strictPreflight: false
+});
 app.register(jwt, { secret: process.env.JWT_SECRET || 'supersecret' });
 
 app.register(webhookRoutes, { prefix: '/webhooks' });

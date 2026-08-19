@@ -1,8 +1,9 @@
-﻿'use client';
+'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '../../components/Sidebar';
 import Topbar from '../../components/Topbar';
+import packageJson from '../../../../package.json';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -26,6 +27,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="p-6 flex-1">
           {children}
         </div>
+        <footer className="py-4 text-center text-xs text-gray-400 border-t border-gray-100">
+          aia-admin v{packageJson.version}
+        </footer>
       </main>
     </div>
   );
