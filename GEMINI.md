@@ -19,3 +19,7 @@ Once I have given you explicit approval to deploy, you MUST perform the followin
 6. Check for completion natively via task manager or status (Wait reasonably long, e.g. 60 seconds if polling, but avoid rapid manual polling - wait for background task alerts).
 
 **CRITICAL RESTRICTION:** You are NOT allowed to touch or modify any files on the VPS other than the ones located inside the VPS_FOLDER.
+
+## Third-Party APIs & Cost Protections
+
+**CRITICAL RULE:** If you are ever going to need, use, or propose any Twilio API (or other 3rd-party API) that incurs a **per-hit charge** (e.g., Twilio Premium Lookup API data packages), you MUST explicitly remind the user and warn them beforehand. Ensure the user is fully aware so they do not re-test APIs blindly and incur unexpected charges.

@@ -4,10 +4,12 @@ import { prisma } from '@saas-poc/shared';
 
 export default async function authRoutes(fastify: FastifyInstance) {
   fastify.post('/register', async (request, reply) => {
-    const { email, password, tenantName } = request.body as any;
+    const { email, password, tenantName, phoneNumber } = request.body as any;
 
-    if (!email || !password || !tenantName) {
-      return reply.status(400).send({ error: 'Email, password, and tenantName are required' });
+    if (!email || !password || !tenantName || !phoneNumber) {
+      return reply
+        .status(400)
+        .send({ error: 'Email, password, tenantName, and phoneNumber are required' });
     }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -22,6 +24,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
       data: {
         email,
         password: hashedPassword,
+        phoneNumber,
         role: 'USER',
         tenant: {
           create: {

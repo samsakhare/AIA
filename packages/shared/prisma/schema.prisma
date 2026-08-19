@@ -36,13 +36,31 @@ model Tenant {
 }
 
 model User {
-  id       String  @id @default(uuid())
-  name     String?
-  email    String  @unique
-  password String
-  role     Role    @default(USER)
-  tenantId String?
-  tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  id          String         @id @default(uuid())
+  name        String?
+  email       String         @unique
+  password    String
+  phoneNumber String?
+  role        Role           @default(USER)
+  tenantId    String?
+  tenant      Tenant?        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  twilioNumbers TwilioNumber[]
+}
+
+model TwilioNumber {
+  id           String   @id @default(uuid())
+  sid          String   @unique
+  phoneNumber  String   @unique
+  locality     String?
+  capabilities Json
+  status       String   @default("ACTIVE")
+  twilioData   Json
+  
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Call {

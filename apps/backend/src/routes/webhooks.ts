@@ -1,10 +1,25 @@
 import { FastifyInstance } from 'fastify';
 import { ProviderFactory } from '../providers/ProviderFactory';
 import { callQueue } from '../workers/callProcessor';
+import { prisma } from '@saas-poc/shared';
 
 export default async function webhookRoutes(fastify: FastifyInstance) {
   fastify.post('/twilio/incoming', async (request, reply) => {
-    const { From, To, CallSid } = request.body as any;
+    const { From, To, CallSid, ToCity, ToState } = request.body as any;
+
+    // Lazily update Locality if it comes in via the webhook
+    if (ToCity || ToState) {
+      const localityStr = [ToCity, ToState].filter(Boolean).join(', ');
+      try {
+        await prisma.twilioNumber.updateMany({
+          where: { phoneNumber: To, locality: null },
+          data: { locality: localityStr }
+        });
+      } catch (err) {
+        request.log.error({ err }, 'Failed to update twilio number locality');
+      }
+    }
+
     const telephony = ProviderFactory.getTelephonyProvider();
     const voiceAi = ProviderFactory.getVoiceAgentProvider();
 

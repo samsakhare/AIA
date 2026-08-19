@@ -38,10 +38,12 @@ export default async function userRoutes(fastify: FastifyInstance) {
 
   // Create a new user (admin onboarding)
   fastify.post('/', async (request, reply) => {
-    const { name, email, password, tenantName, role } = request.body as any;
+    const { name, email, password, tenantName, role, phoneNumber } = request.body as any;
 
-    if (!email || !password || !tenantName) {
-      return reply.status(400).send({ error: 'Email, password, and company name are required' });
+    if (!email || !password || !tenantName || !phoneNumber) {
+      return reply
+        .status(400)
+        .send({ error: 'Email, password, company name, and phone number are required' });
     }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -56,6 +58,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
         name: name || null,
         email,
         password: hashedPassword,
+        phoneNumber,
         role: role || 'USER',
         tenant: {
           create: {
@@ -73,12 +76,13 @@ export default async function userRoutes(fastify: FastifyInstance) {
   // Update a user (with optional password reset)
   fastify.put('/:id', async (request, reply) => {
     const { id } = request.params as { id: string };
-    const { name, email, role, password } = request.body as any;
+    const { name, email, role, password, phoneNumber } = request.body as any;
 
     try {
       const updateData: any = {};
       if (name !== undefined) updateData.name = name;
       if (email !== undefined) updateData.email = email;
+      if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
       if (role !== undefined) updateData.role = role;
       if (password && password.trim() !== '') {
         updateData.password = await bcrypt.hash(password, 10);

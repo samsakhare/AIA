@@ -13,6 +13,7 @@ export default function UsersPage() {
   // Edit modal state
   const [editingUser, setEditingUser] = useState<any>(null);
   const [editName, setEditName] = useState('');
+  const [editPhoneNumber, setEditPhoneNumber] = useState('');
   const [editRole, setEditRole] = useState('');
   const [editPassword, setEditPassword] = useState('');
 
@@ -20,6 +21,7 @@ export default function UsersPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [addName, setAddName] = useState('');
   const [addEmail, setAddEmail] = useState('');
+  const [addPhoneNumber, setAddPhoneNumber] = useState('');
   const [addPassword, setAddPassword] = useState('');
   const [addTenantName, setAddTenantName] = useState('');
   const [addRole, setAddRole] = useState('USER');
@@ -81,7 +83,7 @@ export default function UsersPage() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const body: any = { name: editName, role: editRole };
+      const body: any = { name: editName, role: editRole, phoneNumber: editPhoneNumber };
       if (editPassword.trim() !== '') {
         body.password = editPassword;
       }
@@ -118,6 +120,7 @@ export default function UsersPage() {
         body: JSON.stringify({
           name: addName,
           email: addEmail,
+          phoneNumber: addPhoneNumber,
           password: addPassword,
           tenantName: addTenantName,
           role: addRole
@@ -130,6 +133,7 @@ export default function UsersPage() {
       setShowAddModal(false);
       setAddName('');
       setAddEmail('');
+      setAddPhoneNumber('');
       setAddPassword('');
       setAddTenantName('');
       setAddRole('USER');
@@ -161,6 +165,7 @@ export default function UsersPage() {
             <tr>
               <th className="p-4 font-medium text-gray-600">Name</th>
               <th className="p-4 font-medium text-gray-600">Email</th>
+              <th className="p-4 font-medium text-gray-600">Phone</th>
               <th className="p-4 font-medium text-gray-600">Role</th>
               <th className="p-4 font-medium text-gray-600">Tenant</th>
               <th className="p-4 font-medium text-gray-600 text-right">Actions</th>
@@ -169,8 +174,9 @@ export default function UsersPage() {
           <tbody className="divide-y divide-gray-100">
             {users.map((user) => (
               <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                <td className="p-4 text-gray-900">{user.name || '—'}</td>
+                <td className="p-4 text-gray-900">{user.name || '-'}</td>
                 <td className="p-4 text-gray-600">{user.email}</td>
+                <td className="p-4 text-gray-600">{user.phoneNumber || '-'}</td>
                 <td className="p-4">
                   <span
                     className={
@@ -189,6 +195,7 @@ export default function UsersPage() {
                     onClick={() => {
                       setEditingUser(user);
                       setEditName(user.name || '');
+                      setEditPhoneNumber(user.phoneNumber || '');
                       setEditRole(user.role);
                       setEditPassword('');
                     }}
@@ -223,6 +230,15 @@ export default function UsersPage() {
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <input
+                  type="tel"
+                  value={editPhoneNumber}
+                  onChange={(e) => setEditPhoneNumber(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none"
                 />
               </div>
@@ -295,6 +311,19 @@ export default function UsersPage() {
                   required
                   value={addEmail}
                   onChange={(e) => setAddEmail(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={addPhoneNumber}
+                  onChange={(e) => setAddPhoneNumber(e.target.value)}
+                  placeholder="+1234567890"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none"
                 />
               </div>
