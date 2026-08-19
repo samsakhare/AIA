@@ -24,20 +24,12 @@ export default function Sidebar() {
           <Home className="w-5 h-5" />
           Dashboard
         </Link>
-        <Link href="/calls" className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
-          <Phone className="w-5 h-5" />
-          Calls
-        </Link>
         {role === 'SUPER_ADMIN' && (
           <Link href="/users" className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
             <Users className="w-5 h-5" />
             Users
           </Link>
         )}
-        <Link href="/settings" className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
-          <Settings className="w-5 h-5" />
-          Settings
-        </Link>
 
         {role === 'SUPER_ADMIN' && (
           <>

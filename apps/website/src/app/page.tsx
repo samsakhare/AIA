@@ -1,6 +1,7 @@
 import Navbar from '../../components/Navbar';
 import { ArrowRight, Bot, PhoneCall, Zap, BarChart3, Database } from 'lucide-react';
 import Link from 'next/link';
+import { DASHBOARD_URL } from '@/config/env';
 
 export default function Home() {
   return (
@@ -18,7 +19,7 @@ export default function Home() {
             Answer the phone, greet your customer, and immediately hand them off to a specialized AI Voice Agent to collect intake details, book appointments, and sync to your CRM.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Link href="https://dashboard.srv1575169.hstgr.cloud/signup" className="w-full sm:w-auto rounded-lg bg-blue-600 px-8 py-4 text-lg font-semibold text-white hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200">
+            <Link href={`${DASHBOARD_URL}/signup`} className="w-full sm:w-auto rounded-lg bg-blue-600 px-8 py-4 text-lg font-semibold text-white hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200">
               Start Free Trial <ArrowRight className="w-5 h-5" />
             </Link>
             <Link href="#how-it-works" className="w-full sm:w-auto rounded-lg bg-white px-8 py-4 text-lg font-semibold text-gray-900 border border-gray-200 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { API_URL } from '@/config/api';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
@@ -15,12 +16,7 @@ export default function Signup() {
     setError('');
 
     try {
-      // Use absolute URL for now (replace with env var in production)
-      const apiUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://aia-api.srv1575169.hstgr.cloud/auth/register' 
-        : 'http://localhost:8080/auth/register';
-
-      const res = await fetch(apiUrl, {
+      const res = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, tenantName })

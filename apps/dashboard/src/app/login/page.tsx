@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { API_URL } from '@/config/api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -14,11 +15,7 @@ export default function Login() {
     setError('');
 
     try {
-      const apiUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://aia-api.srv1575169.hstgr.cloud/auth/login' 
-        : 'http://localhost:8080/auth/login';
-
-      const res = await fetch(apiUrl, {
+      const res = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })

@@ -13,6 +13,8 @@ RUN apk update
 WORKDIR /app
 
 COPY .gitignore .gitignore
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/package-lock.json ./package-lock.json
 RUN rm ./package-lock.json && npm install

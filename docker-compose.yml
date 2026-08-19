@@ -22,7 +22,9 @@ services:
       context: .
       dockerfile: apps/backend/Dockerfile
     ports:
-      - "8081:8080"
+      - "8081:8081"
+    env_file:
+      - .env
     environment:
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/saas_poc
       - REDIS_HOST=redis
@@ -35,12 +37,14 @@ services:
       - "traefik.http.routers.aia-backend.entrypoints=websecure"
       - "traefik.http.routers.aia-backend.rule=Host(`aia-api.srv1575169.hstgr.cloud`)"
       - "traefik.http.routers.aia-backend.tls.certresolver=letsencrypt"
-      - "traefik.http.services.aia-backend.loadbalancer.server.port=8080"
+      - "traefik.http.services.aia-backend.loadbalancer.server.port=8081"
 
   website:
     build:
       context: .
       dockerfile: apps/website/Dockerfile
+      args:
+        - NEXT_PUBLIC_DASHBOARD_URL=${NEXT_PUBLIC_DASHBOARD_URL:-https://dashboard.srv1575169.hstgr.cloud}
     ports:
       - "3001:3001"
     labels:
@@ -54,6 +58,8 @@ services:
     build:
       context: .
       dockerfile: apps/dashboard/Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://aia-api.srv1575169.hstgr.cloud}
     ports:
       - "3000:3000"
     labels:

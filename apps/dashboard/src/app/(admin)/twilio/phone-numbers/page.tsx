@@ -3,16 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Phone, MessageSquare, Image as ImageIcon, Printer, Globe, Activity, Settings2 } from 'lucide-react';
+import { API_URL } from '@/config/api';
 
 export default function PhoneNumbersPage() {
   const [phoneNumbers, setPhoneNumbers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
-
-  const apiUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://aia-api.srv1575169.hstgr.cloud/twilio/phone-numbers' 
-    : 'http://localhost:8080/twilio/phone-numbers';
 
   const fetchPhoneNumbers = async () => {
     try {
@@ -21,7 +18,7 @@ export default function PhoneNumbersPage() {
         router.push('/login');
         return;
       }
-      const res = await fetch(apiUrl, {
+      const res = await fetch(`${API_URL}/twilio/phone-numbers`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

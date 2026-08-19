@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trash2, Edit, Plus } from 'lucide-react';
+import { API_URL } from '@/config/api';
 
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -24,16 +25,13 @@ export default function UsersPage() {
   const [addRole, setAddRole] = useState('USER');
 
   const router = useRouter();
-  const apiUrl = process.env.NODE_ENV === 'production' 
-    ? 'https://aia-api.srv1575169.hstgr.cloud/users' 
-    : 'http://localhost:8080/users';
 
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return router.push('/login');
 
-      const res = await fetch(apiUrl, {
+      const res = await fetch(`${API_URL}/users`, {
         headers: {
           'Authorization': 'Bearer ' + token
         }
@@ -60,7 +58,7 @@ export default function UsersPage() {
     
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(apiUrl + '/' + id, {
+      const res = await fetch(`${API_URL}/users/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': 'Bearer ' + token }
       });
@@ -82,7 +80,7 @@ export default function UsersPage() {
       if (editPassword.trim() !== '') {
         body.password = editPassword;
       }
-      const res = await fetch(apiUrl + '/' + editingUser.id, {
+      const res = await fetch(`${API_URL}/users/${editingUser.id}`, {
         method: 'PUT',
         headers: { 
           'Authorization': 'Bearer ' + token,
@@ -106,7 +104,7 @@ export default function UsersPage() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(apiUrl, {
+      const res = await fetch(`${API_URL}/users`, {
         method: 'POST',
         headers: {
           'Authorization': 'Bearer ' + token,

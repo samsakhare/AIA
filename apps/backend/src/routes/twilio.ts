@@ -1,12 +1,5 @@
 import { FastifyInstance } from 'fastify';
 import twilio from 'twilio';
-
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-
-// Initialize the Twilio client only if credentials are provided
-const client = (accountSid && authToken) ? twilio(accountSid, authToken) : null;
-
 export default async function twilioRoutes(fastify: FastifyInstance) {
   // Middleware to check if user is super admin
   fastify.addHook('onRequest', async (request, reply) => {
@@ -23,11 +16,16 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
 
   fastify.get('/phone-numbers', async (request, reply) => {
     try {
-      if (!client) {
+      const accountSid = process.env.TWILIO_ACCOUNT_SID;
+      const authToken = process.env.TWILIO_AUTH_TOKEN;
+      
+      if (!accountSid || !authToken) {
         return reply.status(500).send({ 
           error: 'Twilio credentials not configured in environment variables.' 
         });
       }
+
+      const client = twilio(accountSid, authToken);
 
       // Fetch all incoming phone numbers
       const incomingPhoneNumbers = await client.incomingPhoneNumbers.list({ limit: 50 });
