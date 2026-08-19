@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '../../components/Sidebar';
 import Topbar from '../../components/Topbar';
-import packageJson from '../../../../package.json';
+import packageJson from '../../../package.json';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
