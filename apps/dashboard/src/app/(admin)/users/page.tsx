@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -26,7 +26,7 @@ export default function UsersPage() {
 
       const res = await fetch(apiUrl, {
         headers: {
-          'Authorization': \Bearer \\
+          'Authorization': `Bearer ${token}`
         }
       });
       if (res.status === 401 || res.status === 403) {
@@ -51,9 +51,9 @@ export default function UsersPage() {
     
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(\\/\\, {
+      const res = await fetch(apiUrl + '/' + id, {
         method: 'DELETE',
-        headers: { 'Authorization': \Bearer \\ }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) {
         const data = await res.json();
@@ -69,10 +69,10 @@ export default function UsersPage() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(\\/\\, {
+      const res = await fetch(apiUrl + '/' + editingUser.id, {
         method: 'PUT',
         headers: { 
-          'Authorization': \Bearer \\,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ name: editName, role: editRole })
@@ -114,7 +114,10 @@ export default function UsersPage() {
                 <td className="p-4 text-gray-900">{user.name || '—'}</td>
                 <td className="p-4 text-gray-600">{user.email}</td>
                 <td className="p-4">
-                  <span className={\px-2.5 py-1 rounded-full text-xs font-medium \\}>
+                  <span className={
+                    'px-2.5 py-1 rounded-full text-xs font-medium ' +
+                    (user.role === 'SUPER_ADMIN' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700')
+                  }>
                     {user.role}
                   </span>
                 </td>
