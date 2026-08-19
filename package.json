@@ -1,0 +1,1 @@
+{ "name": "saas-poc", "version": "1.0.0", "private": true, "workspaces": ["apps/*", "packages/*"], "packageManager": "npm@10.8.1", "scripts": { "build": "turbo run build", "dev": "turbo run dev" }, "devDependencies": { "turbo": "latest", "typescript": "latest" } }

@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TriggerType {
+  AUTOMATIC
+  DTMF
+}
+
+enum Role {
+  SUPER_ADMIN
+  TENANT_ADMIN
+}
+
+enum CallStatus {
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+model Tenant {
+  id                 String      @id @default(uuid())
+  name               String
+  handoffTriggerType TriggerType @default(AUTOMATIC)
+  dtmfTriggerKey     String?
+  twilioPhoneNumber  String?
+  forwardingNumber   String?
+  createdAt          DateTime    @default(now())
+  users              User[]
+  calls              Call[]
+}
+
+model User {
+  id       String  @id @default(uuid())
+  email    String  @unique
+  password String
+  role     Role    @default(TENANT_ADMIN)
+  tenantId String?
+  tenant   Tenant? @relation(fields: [tenantId], references: [id])
+}
+
+model Call {
+  id             String     @id @default(uuid())
+  tenantId       String
+  tenant         Tenant     @relation(fields: [tenantId], references: [id])
+  customerNumber String
+  status         CallStatus
+  recordingUrl   String?
+  transcript     Json?
+  extractedData  Json?
+  createdAt      DateTime   @default(now())
+}

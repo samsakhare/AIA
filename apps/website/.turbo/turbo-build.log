@@ -1,0 +1,83 @@
+
+> website@0.1.0 build
+> next build
+
+▲ Next.js 16.3.1 (Turbopack)
+⚠ Warning: Next.js ignored pnpm-workspace.yaml in D:\Sameer\Genxsys\AIA because it is outside the current Git repository (D:\Sameer\Genxsys\AIA\apps\website).
+ To use this directory, set `turbopack.root` in your Next.js config.
+
+✓ Running next.config.ts took 153ms
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+
+  Creating an optimized production build ...
+
+thread 'tokio-rt-worker' (3128) panicked at turbopack\crates\turbopack-core\src\module_graph\mod.rs:746:25:
+internal error: entered unreachable code: there must be a path to a root
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'tokio-rt-worker' (36756) panicked at turbopack\crates\turbopack-core\src\module_graph\mod.rs:746:25:
+internal error: entered unreachable code: there must be a path to a root
+
+thread 'tokio-rt-worker' (35856) panicked at turbopack\crates\turbopack-core\src\module_graph\mod.rs:746:25:
+internal error: entered unreachable code: there must be a path to a root
+
+thread 'tokio-rt-worker' (17280) panicked at turbopack\crates\turbopack-core\src\module_graph\mod.rs:746:25:
+internal error: entered unreachable code: there must be a path to a root
+
+thread 'tokio-rt-worker' (15980) panicked at turbopack\crates\turbopack-core\src\module_graph\mod.rs:746:25:
+internal error: entered unreachable code: there must be a path to a root
+
+thread 'tokio-rt-worker' (23296) panicked at turbopack\crates\turbopack-core\src\module_graph\mod.rs:746:25:
+internal error: entered unreachable code: there must be a path to a root
+
+thread 'tokio-rt-worker' (22508) panicked at turbopack\crates\turbopack-core\src\module_graph\mod.rs:746:25:
+internal error: entered unreachable code: there must be a path to a root
+
+thread 'tokio-rt-worker' (15976) panicked at turbopack\crates\turbopack-core\src\module_graph\mod.rs:746:25:
+internal error: entered unreachable code: there must be a path to a root
+
+thread 'tokio-rt-worker' (21092) panicked at turbopack\crates\turbopack-core\src\module_graph\mod.rs:746:25:
+internal error: entered unreachable code: there must be a path to a root
+
+thread 'tokio-rt-worker' (30564) panicked at turbopack\crates\turbopack-core\src\module_graph\mod.rs:746:25:
+internal error: entered unreachable code: there must be a path to a root
+
+thread 'tokio-rt-worker' (16700) panicked at turbopack\crates\turbopack-core\src\module_graph\mod.rs:746:25:
+internal error: entered unreachable code: there must be a path to a root
+
+thread 'tokio-rt-worker' (19460) panicked at turbopack\crates\turbopack-core\src\module_graph\mod.rs:746:25:
+internal error: entered unreachable code: there must be a path to a root
+
+thread 'tokio-rt-worker' (25684) panicked at turbopack\crates\turbopack-core\src\module_graph\mod.rs:746:25:
+internal error: entered unreachable code: there must be a path to a root
+
+-----
+[1m[31mFATAL[39m[0m: An unexpected Turbopack error occurred. A panic log has been written to C:\Users\ASUS\AppData\Local\Temp\next-panic-1d17a5bff1e05400eade5ce331f84975.log.
+
+To help make Turbopack better, report this error by clicking here: https://bugs.nextjs.org/search?category=turbopack-error-report&title=Turbopack%20Error%3A%20internal%20error%3A%20entered%20unreachable%20code%3A%20there%20must%20be%20a%20path%20to%20a%20root&body=Turbopack%20version%3A%20%603d32eb87%60%0ANext.js%20version%3A%20%600.0.0%60%0A%0AError%20message%3A%0A%60%60%60%0Ainternal%20error%3A%20entered%20unreachable%20code%3A%20there%20must%20be%20a%20path%20to%20a%20root%0A%0ADebug%20info%3A%0A-%20Execution%20of%20emit_all_output_assets_once_with_issues_operation%20failed%0A-%20Execution%20of%20PlainIssue%3A%3Afrom_issue%20failed%0A-%20Execution%20of%20%3CModuleGraphImportTracer%20as%20ImportTracer%3E%3A%3Aget_traces%20failed%0A-%20internal%20error%3A%20entered%20unreachable%20code%3A%20there%20must%20be%20a%20path%20to%20a%20root%0A%60%60%60&labels=Turbopack,Turbopack%20Panic%20Backtrace
+-----
+
+
+> Build error occurred
+Error [TurbopackInternalError]: internal error: entered unreachable code: there must be a path to a root
+
+Debug info:
+- Execution of emit_all_output_assets_once_with_issues_operation failed
+- Execution of PlainIssue::from_issue failed
+- Execution of <ModuleGraphImportTracer as ImportTracer>::get_traces failed
+- internal error: entered unreachable code: there must be a path to a root
+    at <unknown> (TurbopackInternalError: internal error: entered unreachable code: there must be a path to a root) {
+  type: 'TurbopackInternalError',
+  location: 'turbopack\\crates\\turbopack-core\\src\\module_graph\\mod.rs:746:25'
+}
+npm error Lifecycle script `build` failed with error:
+npm error code 1
+npm error path D:\Sameer\Genxsys\AIA\apps\website
+npm error workspace website@0.1.0
+npm error location D:\Sameer\Genxsys\AIA\apps\website
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c next build
