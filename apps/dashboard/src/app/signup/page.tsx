@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -17,7 +17,7 @@ export default function Signup() {
     try {
       // Use absolute URL for now (replace with env var in production)
       const apiUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://aia.srv1575169.hstgr.cloud/auth/register' 
+        ? 'https://aia-api.srv1575169.hstgr.cloud/auth/register' 
         : 'http://localhost:8080/auth/register';
 
       const res = await fetch(apiUrl, {

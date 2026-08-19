@@ -15,7 +15,7 @@ export default function Login() {
 
     try {
       const apiUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://aia.srv1575169.hstgr.cloud/auth/login' 
+        ? 'https://aia-api.srv1575169.hstgr.cloud/auth/login' 
         : 'http://localhost:8080/auth/login';
 
       const res = await fetch(apiUrl, {
