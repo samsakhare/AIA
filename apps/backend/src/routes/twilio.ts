@@ -83,8 +83,8 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
         if (fs.existsSync(configPath)) {
           configuredLimits = JSON.parse(fs.readFileSync(configPath, 'utf8'));
         }
-      } catch (e) {
-        request.log.error('Failed to read twilio-limits.json', e);
+      } catch (e: any) {
+        request.log.error({ err: e }, 'Failed to read twilio-limits.json');
       }
 
       // Dynamically build the limits array for the frontend
