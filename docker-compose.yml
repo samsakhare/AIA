@@ -33,7 +33,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.aia-backend.entrypoints=websecure"
-      - "traefik.http.routers.aia-backend.rule=Host(`aia.srv1575169.hstgr.cloud`) && PathPrefix(`/webhooks`)"
+      - "traefik.http.routers.aia-backend.rule=Host(`aia.srv1575169.hstgr.cloud`) && (PathPrefix(`/webhooks`) || PathPrefix(`/auth`))"
       - "traefik.http.routers.aia-backend.tls.certresolver=letsencrypt"
       - "traefik.http.services.aia-backend.loadbalancer.server.port=8080"
 
@@ -52,3 +52,16 @@ services:
 
 volumes:
   pgdata:
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: apps/dashboard/Dockerfile
+    ports:
+      - "3000:3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.aia-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.aia-dashboard.rule=Host(\"dashboard.srv1575169.hstgr.cloud\")"
+      - "traefik.http.routers.aia-dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.services.aia-dashboard.loadbalancer.server.port=3000"

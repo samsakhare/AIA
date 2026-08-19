@@ -114,3 +114,7 @@ The POC will be considered successful when:
 6.The Tenant can log into the /dashboard and view the completed call record and summary, while the Super Admin (admin@admin.com) can see platform-wide telemetry.
 
 
+
+Original Webhook is: https://hook.eu1.make.com/muiwpxrjffrek6diu2wl879onk92x52w
+
+https://aia.srv1575169.hstgr.cloud/webhooks/twilio/incoming

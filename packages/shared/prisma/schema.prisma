@@ -14,6 +14,7 @@ enum TriggerType {
 enum Role {
   SUPER_ADMIN
   TENANT_ADMIN
+  USER
 }
 
 enum CallStatus {
@@ -38,7 +39,7 @@ model User {
   id       String  @id @default(uuid())
   email    String  @unique
   password String
-  role     Role    @default(TENANT_ADMIN)
+  role     Role    @default(USER)
   tenantId String?
   tenant   Tenant? @relation(fields: [tenantId], references: [id])
 }
