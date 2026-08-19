@@ -1,4 +1,4 @@
-﻿import Navbar from '../../components/Navbar';
+import Navbar from '../../components/Navbar';
 import { ArrowRight, Bot, PhoneCall, Zap, BarChart3, Database } from 'lucide-react';
 import Link from 'next/link';
 
@@ -99,9 +99,9 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2 text-blue-600 font-bold">
             <PhoneCall className="w-5 h-5" />
-            <span>WarmHandoff AI</span>
+            <span>AIA</span>
           </div>
-          <p className="text-gray-500 text-sm">© 2026 WarmHandoff AI. All rights reserved.</p>
+          <p className="text-gray-500 text-sm">© 2026 AIA. All rights reserved.</p>
         </div>
       </footer>
     </div>

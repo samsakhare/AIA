@@ -1,4 +1,4 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import { PhoneCall } from 'lucide-react';
 
 export default function Navbar() {
@@ -7,7 +7,7 @@ export default function Navbar() {
       <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2 font-bold text-xl text-blue-600">
           <PhoneCall className="h-6 w-6" />
-          <span>WarmHandoff AI</span>
+          <span>AIA</span>
         </Link>
         <div className="hidden md:flex gap-6 text-sm font-medium text-gray-600">
           <Link href="#how-it-works" className="hover:text-blue-600 transition-colors">How it Works</Link>
