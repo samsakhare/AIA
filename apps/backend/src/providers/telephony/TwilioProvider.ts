@@ -8,7 +8,13 @@ export class TwilioProvider implements ITelephonyProvider {
     this.client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
   }
 
-  async createConferenceAndDialOwner(tenantId: string, ownerNumber: string, customerNumber: string, conferenceName: string, webhookUrl: string): Promise<void> {
+  async createConferenceAndDialOwner(
+    tenantId: string,
+    ownerNumber: string,
+    customerNumber: string,
+    conferenceName: string,
+    webhookUrl: string
+  ): Promise<void> {
     await this.client.calls.create({
       to: ownerNumber,
       from: customerNumber,
@@ -16,9 +22,16 @@ export class TwilioProvider implements ITelephonyProvider {
     });
   }
 
-  async dialVoiceAgentIntoConference(conferenceName: string, aiAgentPhoneNumber: string): Promise<void> {}
+  async dialVoiceAgentIntoConference(
+    conferenceName: string,
+    aiAgentPhoneNumber: string
+  ): Promise<void> {}
 
-  async dialSipIntoConference(conferenceName: string, sipUri: string, fromNumber: string): Promise<void> {
+  async dialSipIntoConference(
+    conferenceName: string,
+    sipUri: string,
+    fromNumber: string
+  ): Promise<void> {
     await this.client.calls.create({
       to: sipUri,
       from: fromNumber,

@@ -11,15 +11,27 @@ export default function Navbar() {
           <span>AIA</span>
         </Link>
         <div className="hidden md:flex gap-6 text-sm font-medium text-gray-600">
-          <Link href="#how-it-works" className="hover:text-blue-600 transition-colors">How it Works</Link>
-          <Link href="#features" className="hover:text-blue-600 transition-colors">Features</Link>
-          <Link href="#pricing" className="hover:text-blue-600 transition-colors">Pricing</Link>
+          <Link href="#how-it-works" className="hover:text-blue-600 transition-colors">
+            How it Works
+          </Link>
+          <Link href="#features" className="hover:text-blue-600 transition-colors">
+            Features
+          </Link>
+          <Link href="#pricing" className="hover:text-blue-600 transition-colors">
+            Pricing
+          </Link>
         </div>
         <div className="flex items-center gap-4">
-          <Link href={`${DASHBOARD_URL}/login`} className="text-sm font-medium text-gray-600 hover:text-blue-600">
+          <Link
+            href={`${DASHBOARD_URL}/login`}
+            className="text-sm font-medium text-gray-600 hover:text-blue-600"
+          >
             Login
           </Link>
-          <Link href={`${DASHBOARD_URL}/signup`} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors">
+          <Link
+            href={`${DASHBOARD_URL}/signup`}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+          >
             Get Started
           </Link>
         </div>
@@ -27,4 +39,3 @@ export default function Navbar() {
     </nav>
   );
 }
-

@@ -13,7 +13,7 @@ const user = await prisma.user.findUnique({
     posts: true,
     profile: true
   }
-})
+});
 ```
 
 ### Filtered include
@@ -29,7 +29,7 @@ const user = await prisma.user.findUnique({
       select: { id: true, title: true }
     }
   }
-})
+});
 ```
 
 ### Nested include
@@ -46,7 +46,7 @@ const user = await prisma.user.findUnique({
       }
     }
   }
-})
+});
 ```
 
 ## Select Relations
@@ -60,7 +60,7 @@ const user = await prisma.user.findUnique({
       select: { title: true }
     }
   }
-})
+});
 ```
 
 ## Nested Writes
@@ -72,16 +72,13 @@ const user = await prisma.user.create({
   data: {
     email: 'alice@prisma.io',
     posts: {
-      create: [
-        { title: 'Post 1' },
-        { title: 'Post 2' }
-      ]
+      create: [{ title: 'Post 1' }, { title: 'Post 2' }]
     },
     profile: {
       create: { bio: 'Hello!' }
     }
   }
-})
+});
 ```
 
 ### Create or connect
@@ -97,7 +94,7 @@ const post = await prisma.post.create({
       }
     }
   }
-})
+});
 ```
 
 ### Connect existing
@@ -110,7 +107,7 @@ const post = await prisma.post.create({
       connect: { id: 1 }
     }
   }
-})
+});
 
 // Shorthand for foreign key
 const post = await prisma.post.create({
@@ -118,7 +115,7 @@ const post = await prisma.post.create({
     title: 'New Post',
     authorId: 1
   }
-})
+});
 ```
 
 ## Update Relations
@@ -136,7 +133,7 @@ const user = await prisma.user.update({
       }
     }
   }
-})
+});
 ```
 
 ### Update many related
@@ -152,7 +149,7 @@ const user = await prisma.user.update({
       }
     }
   }
-})
+});
 ```
 
 ### Upsert related
@@ -168,7 +165,7 @@ const user = await prisma.user.update({
       }
     }
   }
-})
+});
 ```
 
 ### Disconnect
@@ -180,7 +177,7 @@ const user = await prisma.user.update({
   data: {
     profile: { disconnect: true }
   }
-})
+});
 
 // Many-to-many
 const post = await prisma.post.update({
@@ -190,7 +187,7 @@ const post = await prisma.post.update({
       disconnect: [{ id: 1 }, { id: 2 }]
     }
   }
-})
+});
 ```
 
 ### Delete related
@@ -203,7 +200,7 @@ const user = await prisma.user.update({
       delete: { id: 1 }
     }
   }
-})
+});
 
 // Delete many
 const user = await prisma.user.update({
@@ -213,7 +210,7 @@ const user = await prisma.user.update({
       deleteMany: { published: false }
     }
   }
-})
+});
 ```
 
 ### Set (replace all)
@@ -227,7 +224,7 @@ const post = await prisma.post.update({
       set: [{ id: 1 }, { id: 2 }]
     }
   }
-})
+});
 ```
 
 ## Relation Filters
@@ -241,7 +238,7 @@ const users = await prisma.user.findMany({
   where: {
     posts: { some: { published: true } }
   }
-})
+});
 ```
 
 ### every
@@ -253,7 +250,7 @@ const users = await prisma.user.findMany({
   where: {
     posts: { every: { published: true } }
   }
-})
+});
 ```
 
 ### none
@@ -265,7 +262,7 @@ const users = await prisma.user.findMany({
   where: {
     posts: { none: { published: true } }
   }
-})
+});
 ```
 
 ### is / isNot (1-to-1)
@@ -275,7 +272,7 @@ const users = await prisma.user.findMany({
   where: {
     profile: { is: { country: 'USA' } }
   }
-})
+});
 ```
 
 ## Count Relations
@@ -288,7 +285,7 @@ const users = await prisma.user.findMany({
       select: { posts: true, followers: true }
     }
   }
-})
+});
 // { name: 'Alice', _count: { posts: 5, followers: 100 } }
 ```
 
@@ -304,5 +301,5 @@ const users = await prisma.user.findMany({
       }
     }
   }
-})
+});
 ```

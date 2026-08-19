@@ -25,9 +25,9 @@ export default function Topbar() {
   return (
     <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-10">
       <h1 className="text-xl font-semibold text-gray-800">Overview</h1>
-      
+
       <div className="relative">
-        <button 
+        <button
           onClick={() => setOpen(!open)}
           className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors"
         >
@@ -42,7 +42,7 @@ export default function Topbar() {
             <div className="px-4 py-2 border-b border-gray-100">
               <p className="text-sm font-medium text-gray-900 truncate">{displayName}</p>
             </div>
-            <button 
+            <button
               onClick={handleLogout}
               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 flex items-center gap-2"
             >

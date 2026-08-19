@@ -6,15 +6,19 @@ import { VapiProvider } from './voice-ai/VapiProvider';
 export class ProviderFactory {
   static getTelephonyProvider(type: 'twilio' | 'plivo' = 'twilio'): ITelephonyProvider {
     switch (type) {
-      case 'twilio': return new TwilioProvider();
-      default: throw new Error('Unsupported telephony provider');
+      case 'twilio':
+        return new TwilioProvider();
+      default:
+        throw new Error('Unsupported telephony provider');
     }
   }
 
   static getVoiceAgentProvider(type: 'vapi' | 'bolna' = 'vapi'): IVoiceAgentProvider {
     switch (type) {
-      case 'vapi': return new VapiProvider();
-      default: throw new Error('Unsupported voice agent provider');
+      case 'vapi':
+        return new VapiProvider();
+      default:
+        throw new Error('Unsupported voice agent provider');
     }
   }
 }

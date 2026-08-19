@@ -12,10 +12,10 @@ const user = await prisma.user.findUnique({
   select: {
     id: true,
     name: true,
-    email: true,
+    email: true
     // password: false (excluded by not including)
   }
-})
+});
 // Returns: { id: 1, name: 'Alice', email: 'alice@prisma.io' }
 ```
 
@@ -33,7 +33,7 @@ const user = await prisma.user.findUnique({
       }
     }
   }
-})
+});
 ```
 
 ### Select with include inside
@@ -48,7 +48,7 @@ const user = await prisma.user.findMany({
       }
     }
   }
-})
+});
 ```
 
 ### Select relation count
@@ -61,7 +61,7 @@ const users = await prisma.user.findMany({
       select: { posts: true }
     }
   }
-})
+});
 // Returns: { name: 'Alice', _count: { posts: 5 } }
 ```
 
@@ -76,7 +76,7 @@ const user = await prisma.user.findUnique({
     posts: true,
     profile: true
   }
-})
+});
 ```
 
 ### Filtered include
@@ -91,7 +91,7 @@ const user = await prisma.user.findUnique({
       take: 5
     }
   }
-})
+});
 ```
 
 ### Nested include
@@ -110,7 +110,7 @@ const user = await prisma.user.findUnique({
       }
     }
   }
-})
+});
 ```
 
 ### Include relation count
@@ -122,7 +122,7 @@ const users = await prisma.user.findMany({
       select: { posts: true, followers: true }
     }
   }
-})
+});
 ```
 
 ## omit
@@ -135,7 +135,7 @@ const user = await prisma.user.findUnique({
   omit: {
     password: true
   }
-})
+});
 // Returns all fields except password
 ```
 
@@ -149,7 +149,7 @@ const users = await prisma.user.findMany({
       omit: { content: true }
     }
   }
-})
+});
 ```
 
 **Note:** Cannot use `select` and `omit` together.
@@ -164,7 +164,7 @@ const users = await prisma.user.findMany({
     email: { contains: '@prisma.io' },
     role: 'ADMIN'
   }
-})
+});
 ```
 
 See `filters.md` for detailed filter operators.
@@ -177,15 +177,12 @@ Sort results:
 // Single field
 const users = await prisma.user.findMany({
   orderBy: { name: 'asc' }
-})
+});
 
 // Multiple fields
 const users = await prisma.user.findMany({
-  orderBy: [
-    { role: 'desc' },
-    { name: 'asc' }
-  ]
-})
+  orderBy: [{ role: 'desc' }, { name: 'asc' }]
+});
 ```
 
 ### Order by relation
@@ -195,7 +192,7 @@ const users = await prisma.user.findMany({
   orderBy: {
     posts: { _count: 'desc' }
   }
-})
+});
 ```
 
 ### Null handling
@@ -205,7 +202,7 @@ const users = await prisma.user.findMany({
   orderBy: {
     name: { sort: 'asc', nulls: 'last' }
   }
-})
+});
 ```
 
 ## take & skip
@@ -217,13 +214,13 @@ Pagination:
 const users = await prisma.user.findMany({
   take: 10,
   skip: 0
-})
+});
 
 // Second page
 const users = await prisma.user.findMany({
   take: 10,
   skip: 10
-})
+});
 ```
 
 ### Negative take (reverse)
@@ -232,7 +229,7 @@ const users = await prisma.user.findMany({
 const lastUsers = await prisma.user.findMany({
   take: -10,
   orderBy: { id: 'asc' }
-})
+});
 // Returns last 10 users
 ```
 
@@ -245,15 +242,15 @@ Cursor-based pagination:
 const firstPage = await prisma.user.findMany({
   take: 10,
   orderBy: { id: 'asc' }
-})
+});
 
 // Next page using cursor
 const nextPage = await prisma.user.findMany({
   take: 10,
-  skip: 1,  // Skip the cursor record
+  skip: 1, // Skip the cursor record
   cursor: { id: firstPage[firstPage.length - 1].id },
   orderBy: { id: 'asc' }
-})
+});
 ```
 
 ## distinct
@@ -264,7 +261,7 @@ Return unique values:
 const cities = await prisma.user.findMany({
   distinct: ['city'],
   select: { city: true }
-})
+});
 ```
 
 ### Multiple distinct fields
@@ -272,5 +269,5 @@ const cities = await prisma.user.findMany({
 ```typescript
 const locations = await prisma.user.findMany({
   distinct: ['city', 'country']
-})
+});
 ```

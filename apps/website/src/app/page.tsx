@@ -16,13 +16,20 @@ export default function Home() {
             <span className="block text-blue-600">Warm Handoff to AI.</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Answer the phone, greet your customer, and immediately hand them off to a specialized AI Voice Agent to collect intake details, book appointments, and sync to your CRM.
+            Answer the phone, greet your customer, and immediately hand them off to a specialized AI
+            Voice Agent to collect intake details, book appointments, and sync to your CRM.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Link href={`${DASHBOARD_URL}/signup`} className="w-full sm:w-auto rounded-lg bg-blue-600 px-8 py-4 text-lg font-semibold text-white hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200">
+            <Link
+              href={`${DASHBOARD_URL}/signup`}
+              className="w-full sm:w-auto rounded-lg bg-blue-600 px-8 py-4 text-lg font-semibold text-white hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
+            >
               Start Free Trial <ArrowRight className="w-5 h-5" />
             </Link>
-            <Link href="#how-it-works" className="w-full sm:w-auto rounded-lg bg-white px-8 py-4 text-lg font-semibold text-gray-900 border border-gray-200 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+            <Link
+              href="#how-it-works"
+              className="w-full sm:w-auto rounded-lg bg-white px-8 py-4 text-lg font-semibold text-gray-900 border border-gray-200 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+            >
               See How It Works
             </Link>
           </div>
@@ -34,9 +41,11 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900">The Perfect 3-Way Handoff</h2>
-            <p className="text-gray-600 mt-4 text-lg">Keep the human touch while automating the tedious intake process.</p>
+            <p className="text-gray-600 mt-4 text-lg">
+              Keep the human touch while automating the tedious intake process.
+            </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-12">
             {/* Step 1 */}
             <div className="flex flex-col items-center text-center space-y-4">
@@ -44,9 +53,12 @@ export default function Home() {
                 <PhoneCall className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-bold text-gray-900">1. You Answer</h3>
-              <p className="text-gray-600">You pick up the phone on your personal device and greet the caller with a warm, human introduction.</p>
+              <p className="text-gray-600">
+                You pick up the phone on your personal device and greet the caller with a warm,
+                human introduction.
+              </p>
             </div>
-            
+
             {/* Step 2 */}
             <div className="flex flex-col items-center text-center space-y-4 relative">
               <div className="hidden md:block absolute top-8 left-[-50%] w-full h-[2px] bg-blue-100 -z-10"></div>
@@ -55,7 +67,10 @@ export default function Home() {
                 <Bot className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-bold text-gray-900">2. AI Joins the Call</h3>
-              <p className="text-gray-600">With a tap, your dedicated AI assistant instantly joins the conference call to assist the customer.</p>
+              <p className="text-gray-600">
+                With a tap, your dedicated AI assistant instantly joins the conference call to
+                assist the customer.
+              </p>
             </div>
 
             {/* Step 3 */}
@@ -64,7 +79,10 @@ export default function Home() {
                 <Zap className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-bold text-gray-900">3. You Hang Up</h3>
-              <p className="text-gray-600">You drop off to focus on your business. The AI continues the conversation, collecting details and booking appointments.</p>
+              <p className="text-gray-600">
+                You drop off to focus on your business. The AI continues the conversation,
+                collecting details and booking appointments.
+              </p>
             </div>
           </div>
         </div>
@@ -74,21 +92,29 @@ export default function Home() {
       <section id="features" className="py-24 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900">Everything you need to automate intake</h2>
+            <h2 className="text-3xl font-bold text-gray-900">
+              Everything you need to automate intake
+            </h2>
           </div>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm flex gap-4">
               <Database className="w-8 h-8 text-blue-600 shrink-0" />
               <div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Structured Data Extraction</h3>
-                <p className="text-gray-600">The AI automatically pulls out names, phone numbers, budgets, and specific requirements from the natural conversation and saves it as clean JSON data.</p>
+                <p className="text-gray-600">
+                  The AI automatically pulls out names, phone numbers, budgets, and specific
+                  requirements from the natural conversation and saves it as clean JSON data.
+                </p>
               </div>
             </div>
             <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm flex gap-4">
               <BarChart3 className="w-8 h-8 text-blue-600 shrink-0" />
               <div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Instant Call Summaries</h3>
-                <p className="text-gray-600">Get a bulleted summary, full transcript, and action items delivered instantly to your dashboard the moment the call ends.</p>
+                <p className="text-gray-600">
+                  Get a bulleted summary, full transcript, and action items delivered instantly to
+                  your dashboard the moment the call ends.
+                </p>
               </div>
             </div>
           </div>
@@ -108,4 +134,3 @@ export default function Home() {
     </div>
   );
 }
-

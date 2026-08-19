@@ -11,7 +11,7 @@ import twilioRoutes from './routes/twilio';
 
 const app = fastify({ logger: true });
 
-app.register(cors, { 
+app.register(cors, {
   origin: true,
   methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -31,7 +31,7 @@ app.get('/health', async () => {
 async function runSeed() {
   const adminEmail = 'admin@admin.com';
   const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
-  
+
   if (!existingAdmin) {
     console.log('Seeding super admin user...');
     const hashedPassword = await bcrypt.hash('admin@123456', 10);
@@ -43,7 +43,7 @@ async function runSeed() {
         role: 'SUPER_ADMIN',
         tenant: {
           create: {
-            name: 'Super Admin Tenant',
+            name: 'Super Admin Tenant'
           }
         }
       }

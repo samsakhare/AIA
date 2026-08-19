@@ -3,10 +3,9 @@ import bcrypt from 'bcrypt';
 import { prisma } from '@saas-poc/shared';
 
 export default async function authRoutes(fastify: FastifyInstance) {
-  
   fastify.post('/register', async (request, reply) => {
     const { email, password, tenantName } = request.body as any;
-    
+
     if (!email || !password || !tenantName) {
       return reply.status(400).send({ error: 'Email, password, and tenantName are required' });
     }
@@ -26,26 +25,29 @@ export default async function authRoutes(fastify: FastifyInstance) {
         role: 'USER',
         tenant: {
           create: {
-            name: tenantName,
+            name: tenantName
           }
         }
       }
     });
 
-    const token = fastify.jwt.sign({ 
-      id: user.id, 
-      email: user.email, 
+    const token = fastify.jwt.sign({
+      id: user.id,
+      email: user.email,
       name: user.name,
-      role: user.role, 
-      tenantId: user.tenantId 
+      role: user.role,
+      tenantId: user.tenantId
     });
 
-    reply.send({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    reply.send({
+      token,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role }
+    });
   });
 
   fastify.post('/login', async (request, reply) => {
     const { email, password } = request.body as any;
-    
+
     if (!email || !password) {
       return reply.status(400).send({ error: 'Email and password are required' });
     }
@@ -60,14 +62,17 @@ export default async function authRoutes(fastify: FastifyInstance) {
       return reply.status(401).send({ error: 'Invalid credentials' });
     }
 
-    const token = fastify.jwt.sign({ 
-      id: user.id, 
-      email: user.email, 
+    const token = fastify.jwt.sign({
+      id: user.id,
+      email: user.email,
       name: user.name,
-      role: user.role, 
-      tenantId: user.tenantId 
+      role: user.role,
+      tenantId: user.tenantId
     });
 
-    reply.send({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    reply.send({
+      token,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role }
+    });
   });
 }

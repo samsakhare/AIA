@@ -1,1 +1,22 @@
-{"name":"@saas-poc/shared","version":"1.0.0","main":"dist/index.js","types":"dist/index.d.ts","scripts":{"build":"prisma generate && tsc","db:generate":"prisma generate","db:push":"prisma db push"},"dependencies":{"@prisma/adapter-pg":"^7.9.1","@prisma/client":"latest","pg":"^8.23.0"},"devDependencies":{"@types/node":"^26.2.0","@types/pg":"^8.23.1","prisma":"latest","typescript":"latest"}}
+{
+  "name": "@saas-poc/shared",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "prisma generate && tsc",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "latest",
+    "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "@types/pg": "^8.23.1",
+    "prisma": "latest",
+    "typescript": "latest"
+  }
+}

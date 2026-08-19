@@ -20,12 +20,18 @@ export default function Sidebar() {
         <span>AIA Admin</span>
       </div>
       <nav className="flex-1 px-4 space-y-2">
-        <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-800 text-white">
+        <Link
+          href="/"
+          className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-800 text-white"
+        >
           <Home className="w-5 h-5" />
           Dashboard
         </Link>
         {role === 'SUPER_ADMIN' && (
-          <Link href="/users" className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
+          <Link
+            href="/users"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+          >
             <Users className="w-5 h-5" />
             Users
           </Link>
@@ -36,9 +42,19 @@ export default function Sidebar() {
             <div className="px-4 mt-8 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Twilio
             </div>
-            <Link href="/twilio/phone-numbers" className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
+            <Link
+              href="/twilio/phone-numbers"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+            >
               <Phone className="w-5 h-5" />
               Phone Numbers
+            </Link>
+            <Link
+              href="/twilio/quota"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+            >
+              <Settings className="w-5 h-5" />
+              Quota
             </Link>
 
             <div className="px-4 mt-8 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">

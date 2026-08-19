@@ -30,7 +30,7 @@ export default function Signup() {
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      
+
       router.push('/');
     } catch (err: any) {
       setError(err.message);
@@ -45,18 +45,16 @@ export default function Signup() {
           <p className="text-gray-500 mt-2">Get started with AIA today</p>
         </div>
 
-        {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-6">
-            {error}
-          </div>
-        )}
+        {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-6">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Company / Workspace Name</label>
-            <input 
-              type="text" 
-              required 
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Company / Workspace Name
+            </label>
+            <input
+              type="text"
+              required
               value={tenantName}
               onChange={(e) => setTenantName(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
@@ -64,9 +62,9 @@ export default function Signup() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input 
-              type="email" 
-              required 
+            <input
+              type="email"
+              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
@@ -74,22 +72,28 @@ export default function Signup() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
             />
           </div>
-          
-          <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors mt-2">
+
+          <button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors mt-2"
+          >
             Sign Up
           </button>
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          Already have an account? <Link href="/login" className="text-blue-600 font-medium hover:underline">Sign in</Link>
+          Already have an account?{' '}
+          <Link href="/login" className="text-blue-600 font-medium hover:underline">
+            Sign in
+          </Link>
         </p>
       </div>
     </div>

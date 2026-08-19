@@ -1,0 +1,14 @@
+﻿{
+  "calls": {
+    "product": "Voice Minutes",
+    "channel": "Voice",
+    "limit": 75,
+    "unit": "minutes"
+  },
+  "phonenumbers": {
+    "product": "Phone Numbers",
+    "channel": "Numbers",
+    "limit": 1,
+    "unit": "numbers"
+  }
+}

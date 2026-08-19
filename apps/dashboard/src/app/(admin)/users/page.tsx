@@ -9,7 +9,7 @@ export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
+
   // Edit modal state
   const [editingUser, setEditingUser] = useState<any>(null);
   const [editName, setEditName] = useState('');
@@ -33,7 +33,7 @@ export default function UsersPage() {
 
       const res = await fetch(`${API_URL}/users`, {
         headers: {
-          'Authorization': 'Bearer ' + token
+          Authorization: 'Bearer ' + token
         }
       });
       if (res.status === 401 || res.status === 403) {
@@ -54,13 +54,18 @@ export default function UsersPage() {
   }, []);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this user? This will also delete their associated tenant and all calls.')) return;
-    
+    if (
+      !confirm(
+        'Are you sure you want to delete this user? This will also delete their associated tenant and all calls.'
+      )
+    )
+      return;
+
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/users/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + token }
+        headers: { Authorization: 'Bearer ' + token }
       });
       const data = await res.json();
       if (!res.ok) {
@@ -82,8 +87,8 @@ export default function UsersPage() {
       }
       const res = await fetch(`${API_URL}/users/${editingUser.id}`, {
         method: 'PUT',
-        headers: { 
-          'Authorization': 'Bearer ' + token,
+        headers: {
+          Authorization: 'Bearer ' + token,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(body)
@@ -107,7 +112,7 @@ export default function UsersPage() {
       const res = await fetch(`${API_URL}/users`, {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer ' + token,
+          Authorization: 'Bearer ' + token,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -162,21 +167,25 @@ export default function UsersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {users.map(user => (
+            {users.map((user) => (
               <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                 <td className="p-4 text-gray-900">{user.name || '—'}</td>
                 <td className="p-4 text-gray-600">{user.email}</td>
                 <td className="p-4">
-                  <span className={
-                    'px-2.5 py-1 rounded-full text-xs font-medium ' +
-                    (user.role === 'SUPER_ADMIN' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700')
-                  }>
+                  <span
+                    className={
+                      'px-2.5 py-1 rounded-full text-xs font-medium ' +
+                      (user.role === 'SUPER_ADMIN'
+                        ? 'bg-purple-100 text-purple-700'
+                        : 'bg-blue-100 text-blue-700')
+                    }
+                  >
                     {user.role}
                   </span>
                 </td>
                 <td className="p-4 text-gray-600">{user.tenant?.name || '—'}</td>
                 <td className="p-4 text-right flex justify-end gap-2">
-                  <button 
+                  <button
                     onClick={() => {
                       setEditingUser(user);
                       setEditName(user.name || '');
@@ -188,7 +197,7 @@ export default function UsersPage() {
                     <Edit className="w-4 h-4" />
                   </button>
                   {user.role !== 'SUPER_ADMIN' && (
-                    <button 
+                    <button
                       onClick={() => handleDelete(user.id)}
                       className="p-2 text-gray-400 hover:text-red-600 transition-colors"
                     >
@@ -210,10 +219,10 @@ export default function UsersPage() {
             <form onSubmit={handleEditSave} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={editName}
-                  onChange={e => setEditName(e.target.value)}
+                  onChange={(e) => setEditName(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none"
                 />
               </div>
@@ -221,7 +230,7 @@ export default function UsersPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                 <select
                   value={editRole}
-                  onChange={e => setEditRole(e.target.value)}
+                  onChange={(e) => setEditRole(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none bg-white"
                 >
                   <option value="USER">USER</option>
@@ -230,26 +239,30 @@ export default function UsersPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Reset Password <span className="text-gray-400 font-normal">(leave blank to keep current)</span>
+                  Reset Password{' '}
+                  <span className="text-gray-400 font-normal">(leave blank to keep current)</span>
                 </label>
-                <input 
+                <input
                   type="password"
                   value={editPassword}
-                  onChange={e => setEditPassword(e.target.value)}
+                  onChange={(e) => setEditPassword(e.target.value)}
                   placeholder="Enter new password..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none"
                 />
               </div>
               <div className="flex justify-end gap-3 mt-6">
-                <button 
-                  type="button" 
-                  onClick={() => { setEditingUser(null); setEditPassword(''); }}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingUser(null);
+                    setEditPassword('');
+                  }}
                   className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
                 >
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
                   Save Changes
@@ -268,40 +281,42 @@ export default function UsersPage() {
             <form onSubmit={handleAddUser} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={addName}
-                  onChange={e => setAddName(e.target.value)}
+                  onChange={(e) => setAddName(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                <input 
+                <input
                   type="email"
                   required
                   value={addEmail}
-                  onChange={e => setAddEmail(e.target.value)}
+                  onChange={(e) => setAddEmail(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
-                <input 
+                <input
                   type="password"
                   required
                   value={addPassword}
-                  onChange={e => setAddPassword(e.target.value)}
+                  onChange={(e) => setAddPassword(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
-                <input 
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Company Name *
+                </label>
+                <input
                   type="text"
                   required
                   value={addTenantName}
-                  onChange={e => setAddTenantName(e.target.value)}
+                  onChange={(e) => setAddTenantName(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none"
                 />
               </div>
@@ -309,7 +324,7 @@ export default function UsersPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                 <select
                   value={addRole}
-                  onChange={e => setAddRole(e.target.value)}
+                  onChange={(e) => setAddRole(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none bg-white"
                 >
                   <option value="USER">USER</option>
@@ -317,15 +332,15 @@ export default function UsersPage() {
                 </select>
               </div>
               <div className="flex justify-end gap-3 mt-6">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setShowAddModal(false)}
                   className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
                 >
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
                   Create User

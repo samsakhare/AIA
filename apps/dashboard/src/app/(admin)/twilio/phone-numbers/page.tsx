@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Phone, MessageSquare, Image as ImageIcon, Printer, Globe, Activity, Settings2 } from 'lucide-react';
+import {
+  Phone,
+  MessageSquare,
+  Image as ImageIcon,
+  Printer,
+  Globe,
+  Activity,
+  Settings2
+} from 'lucide-react';
 import { API_URL } from '@/config/api';
 
 export default function PhoneNumbersPage() {
@@ -20,7 +28,7 @@ export default function PhoneNumbersPage() {
       }
       const res = await fetch(`${API_URL}/twilio/phone-numbers`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`
         }
       });
 
@@ -50,7 +58,9 @@ export default function PhoneNumbersPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Phone Numbers</h1>
-          <p className="text-gray-500 mt-1">Manage your purchased Twilio phone numbers and their capabilities.</p>
+          <p className="text-gray-500 mt-1">
+            Manage your purchased Twilio phone numbers and their capabilities.
+          </p>
         </div>
       </div>
 
@@ -105,7 +115,10 @@ export default function PhoneNumbersPage() {
                           </div>
                         )}
                         {number.capabilities?.mms && (
-                          <div title="MMS" className="p-1.5 bg-purple-50 text-purple-600 rounded-md">
+                          <div
+                            title="MMS"
+                            className="p-1.5 bg-purple-50 text-purple-600 rounded-md"
+                          >
                             <ImageIcon className="w-4 h-4" />
                           </div>
                         )}
@@ -136,7 +149,9 @@ export default function PhoneNumbersPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${number.status === 'in-use' || number.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${number.status === 'in-use' || number.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}
+                      >
                         <Activity className="w-3.5 h-3.5" />
                         {number.status || 'Active'}
                       </span>

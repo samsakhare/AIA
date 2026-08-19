@@ -73,14 +73,14 @@ Fix:
 Minimal recovery config:
 
 ```typescript
-import { defineComputeConfig } from "@prisma/compute-sdk/config";
+import { defineComputeConfig } from '@prisma/compute-sdk/config';
 
 export default defineComputeConfig({
   app: {
-    framework: "hono",
-    entry: "src/index.ts",
-    httpPort: 8080,
-  },
+    framework: 'hono',
+    entry: 'src/index.ts',
+    httpPort: 8080
+  }
 });
 ```
 
@@ -270,10 +270,10 @@ Fix `next.config.ts`:
 
 ```typescript
 const nextConfig = {
-  output: "standalone",
-}
+  output: 'standalone'
+};
 
-export default nextConfig
+export default nextConfig;
 ```
 
 Then reinstall/build if needed and deploy again.

@@ -3,7 +3,6 @@ import bcrypt from 'bcrypt';
 import { prisma } from '@saas-poc/shared';
 
 export default async function userRoutes(fastify: FastifyInstance) {
-  
   // Middleware to enforce SUPER_ADMIN role
   fastify.addHook('onRequest', async (request, reply) => {
     try {
@@ -27,9 +26,9 @@ export default async function userRoutes(fastify: FastifyInstance) {
         email: 'asc'
       }
     });
-    
+
     // Omit passwords
-    const safeUsers = users.map(u => {
+    const safeUsers = users.map((u) => {
       const { password, ...safeUser } = u;
       return safeUser;
     });
@@ -60,7 +59,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
         role: role || 'USER',
         tenant: {
           create: {
-            name: tenantName,
+            name: tenantName
           }
         }
       },
