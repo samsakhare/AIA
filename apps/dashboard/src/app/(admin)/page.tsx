@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { API_URL } from '@/config/api';
+import { Phone, CircleDollarSign, Clock, PhoneCall, ArrowRightLeft, ArrowLeftRight, CheckCircle2, XCircle, ArrowUpRight, ArrowDownLeft, Calendar, FileText, Play, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface QuotaLimit {
   product: string;
@@ -23,6 +24,27 @@ interface DashboardMetrics {
   totalCalls: number;
   totalCost: number;
   totalDuration: number;
+}
+
+interface TwilioNumber {
+  id: string;
+  sid: string;
+  phoneNumber: string;
+  status: string;
+  locality?: string;
+  capabilities?: any;
+}
+
+interface CallLog {
+  id: string;
+  from: string;
+  to: string;
+  status: string;
+  totalDuration: number | null;
+  totalCost: number | null;
+  createdAt: string;
+  recordingUrl: string | null;
+  legs: any[];
 }
 
 const getPresetDates = (preset: string) => {
@@ -73,6 +95,14 @@ export default function DashboardHome() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loadingMetrics, setLoadingMetrics] = useState(false);
 
+  // Phone Numbers and Logs State
+  const [phoneNumbers, setPhoneNumbers] = useState<TwilioNumber[]>([]);
+  const [selectedPhoneId, setSelectedPhoneId] = useState<string | null>(null);
+  const [logs, setLogs] = useState<CallLog[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [logsPage, setLogsPage] = useState(1);
+  const [logsTotalPages, setLogsTotalPages] = useState(1);
+
   // Initialize dates
   useEffect(() => {
     const { start, end } = getPresetDates('this_week');
@@ -80,15 +110,31 @@ export default function DashboardHome() {
     setEndDate(end);
   }, []);
 
-  // Fetch role and quota
+  // Fetch role, quota, and phone numbers
   useEffect(() => {
     const user = localStorage.getItem('user');
     if (user) {
       const parsedUser = JSON.parse(user);
       setRole(parsedUser.role);
 
+      const token = localStorage.getItem('token');
+      
+      // Fetch phone numbers (for all users, but API filters to their own if USER)
+      fetch(`${API_URL}/twilio/phone-numbers`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.phoneNumbers) {
+            setPhoneNumbers(data.phoneNumbers);
+            if (data.phoneNumbers.length > 0) {
+              setSelectedPhoneId(data.phoneNumbers[0].id);
+            }
+          }
+        })
+        .catch(console.error);
+
       if (parsedUser.role === 'SUPER_ADMIN') {
-        const token = localStorage.getItem('token');
         fetch(`${API_URL}/twilio/quota`, {
           headers: { Authorization: `Bearer ${token}` }
         })
@@ -107,7 +153,7 @@ export default function DashboardHome() {
     }
   }, []);
 
-  // Fetch Metrics
+  // Fetch Metrics when date changes
   useEffect(() => {
     if (!startDate || !endDate) return;
     
@@ -130,6 +176,35 @@ export default function DashboardHome() {
       });
   }, [startDate, endDate]);
 
+  // Fetch Logs when selectedPhoneId, dates, or page changes
+  useEffect(() => {
+    if (!selectedPhoneId || !startDate || !endDate) return;
+    
+    setLogsLoading(true);
+    const token = localStorage.getItem('token');
+    
+    fetch(`${API_URL}/twilio/phone-numbers/${selectedPhoneId}/logs?startDate=${startDate}&endDate=${endDate}&page=${logsPage}&limit=10`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.error) {
+          setLogs(data.logs || []);
+          setLogsTotalPages(data.totalPages || 1);
+        }
+        setLogsLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to fetch logs', err);
+        setLogsLoading(false);
+      });
+  }, [selectedPhoneId, startDate, endDate, logsPage]);
+
+  // Reset page to 1 when date changes
+  useEffect(() => {
+    setLogsPage(1);
+  }, [startDate, endDate, selectedPhoneId]);
+
   const handlePresetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = e.target.value;
     setPreset(selected);
@@ -141,20 +216,20 @@ export default function DashboardHome() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+    <div className="space-y-6 max-w-full overflow-hidden">
+      <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
         <div>
           <h2 className="text-xl font-bold text-gray-900">Dashboard</h2>
           <p className="text-sm text-gray-500">View your call analytics and total costs.</p>
         </div>
         
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex flex-col">
+        <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3">
+          <div className="flex flex-col w-full sm:w-auto">
             <label className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">Date Range</label>
             <select 
               value={preset} 
               onChange={handlePresetChange}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 transition-colors cursor-pointer"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 transition-colors cursor-pointer w-full sm:w-auto"
             >
               <option value="today">Today</option>
               <option value="yesterday">Yesterday</option>
@@ -166,34 +241,35 @@ export default function DashboardHome() {
             </select>
           </div>
 
-          <div className={`flex items-center gap-2 transition-opacity duration-300 ${preset === 'custom' ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
-            <div className="flex flex-col">
+          <div className={`flex items-center gap-2 transition-opacity duration-300 w-full sm:w-auto ${preset === 'custom' ? 'opacity-100' : 'opacity-50 pointer-events-none hidden sm:flex'}`}>
+            <div className="flex flex-col flex-1 sm:flex-initial">
                <label className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">From</label>
                <input 
                  type="date" 
                  value={startDate} 
                  onChange={(e) => { setStartDate(e.target.value); setPreset('custom'); }}
-                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"
+                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 w-full"
                />
             </div>
-            <span className="text-gray-400 mt-5">-</span>
-            <div className="flex flex-col">
+            <span className="text-gray-400 mt-5 hidden sm:block">-</span>
+            <div className="flex flex-col flex-1 sm:flex-initial">
                <label className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wider">To</label>
                <input 
                  type="date" 
                  value={endDate} 
                  onChange={(e) => { setEndDate(e.target.value); setPreset('custom'); }}
-                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"
+                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2 w-full"
                />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone-call"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><path d="M14.05 2a9 9 0 0 1 8 7.94"/><path d="M14.05 6A5 5 0 0 1 18 10"/></svg>
+            <PhoneCall className="w-12 h-12" />
           </div>
           <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wider">Total Calls</h3>
           {loadingMetrics ? (
@@ -205,7 +281,7 @@ export default function DashboardHome() {
         
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-dollar-sign"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+            <CircleDollarSign className="w-12 h-12" />
           </div>
           <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wider">Total Cost</h3>
           {loadingMetrics ? (
@@ -219,7 +295,7 @@ export default function DashboardHome() {
         
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-clock"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <Clock className="w-12 h-12" />
           </div>
           <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wider">Total Duration</h3>
           {loadingMetrics ? (
@@ -232,13 +308,163 @@ export default function DashboardHome() {
         </div>
       </div>
 
+      {/* Main Bottom Section */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        
+        {/* Left Column: Assigned Phone Numbers */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col xl:col-span-1 h-full min-h-[400px]">
+          <div className="p-4 border-b border-gray-100 flex-shrink-0">
+            <h3 className="text-lg font-bold text-gray-900">Assigned Numbers</h3>
+            <p className="text-xs text-gray-500">Select a number to view logs.</p>
+          </div>
+          <div className="p-2 flex-1 overflow-y-auto">
+            {phoneNumbers.length === 0 ? (
+               <div className="text-center py-8">
+                 <p className="text-sm text-gray-500">No numbers assigned.</p>
+               </div>
+            ) : (
+              <div className="space-y-1">
+                {phoneNumbers.map((num) => (
+                  <button
+                    key={num.id}
+                    onClick={() => setSelectedPhoneId(num.id)}
+                    className={`w-full text-left p-3 rounded-lg flex items-center justify-between transition-colors ${
+                      selectedPhoneId === num.id 
+                        ? 'bg-blue-50 border border-blue-100' 
+                        : 'hover:bg-gray-50 border border-transparent'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-full ${selectedPhoneId === num.id ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
+                        <Phone className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className={`font-semibold ${selectedPhoneId === num.id ? 'text-blue-900' : 'text-gray-800'}`}>{num.phoneNumber}</p>
+                        <p className="text-xs text-gray-500">{num.locality || 'Unknown location'}</p>
+                      </div>
+                    </div>
+                    {selectedPhoneId === num.id && <ChevronRight className="w-5 h-5 text-blue-500" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column: Call Logs */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col xl:col-span-2 min-h-[500px]">
+          <div className="p-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Call Logs</h3>
+              <p className="text-xs text-gray-500">
+                {selectedPhoneId 
+                  ? `Showing logs for ${phoneNumbers.find(p => p.id === selectedPhoneId)?.phoneNumber}` 
+                  : 'Select a number first'
+                }
+              </p>
+            </div>
+            
+            {logsTotalPages > 1 && (
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setLogsPage(p => Math.max(1, p - 1))}
+                  disabled={logsPage === 1 || logsLoading}
+                  className="p-1 rounded-md hover:bg-gray-100 disabled:opacity-50"
+                >
+                  <ChevronLeft className="w-5 h-5 text-gray-600" />
+                </button>
+                <span className="text-sm font-medium text-gray-700">
+                  Page {logsPage} of {logsTotalPages}
+                </span>
+                <button 
+                  onClick={() => setLogsPage(p => Math.min(logsTotalPages, p + 1))}
+                  disabled={logsPage === logsTotalPages || logsLoading}
+                  className="p-1 rounded-md hover:bg-gray-100 disabled:opacity-50"
+                >
+                  <ChevronRight className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="flex-1 overflow-x-auto">
+            {!selectedPhoneId ? (
+              <div className="flex flex-col items-center justify-center h-full text-gray-400 py-12">
+                <PhoneCall className="w-12 h-12 mb-3 opacity-20" />
+                <p>Select a phone number to view logs</p>
+              </div>
+            ) : logsLoading ? (
+              <div className="flex justify-center items-center h-full min-h-[200px]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            ) : logs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-gray-400 py-12">
+                <FileText className="w-12 h-12 mb-3 opacity-20" />
+                <p>No calls found for this date range.</p>
+              </div>
+            ) : (
+              <table className="w-full text-sm text-left text-gray-500 min-w-[800px]">
+                <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-4 rounded-tl-lg">Call Date</th>
+                    <th scope="col" className="px-6 py-4">From</th>
+                    <th scope="col" className="px-6 py-4">To</th>
+                    <th scope="col" className="px-6 py-4">Status</th>
+                    <th scope="col" className="px-6 py-4">Duration</th>
+                    <th scope="col" className="px-6 py-4 text-center">Recording</th>
+                    <th scope="col" className="px-6 py-4 text-right rounded-tr-lg">Cost</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {logs.map((log) => (
+                    <tr key={log.id} className="bg-white border-b hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="font-medium text-gray-900">{new Date(log.createdAt).toLocaleDateString()}</div>
+                        <div className="text-xs text-gray-400">{new Date(log.createdAt).toLocaleTimeString()}</div>
+                      </td>
+                      <td className="px-6 py-4 font-mono text-xs">{log.from}</td>
+                      <td className="px-6 py-4 font-mono text-xs">{log.to}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                          log.status.toLowerCase() === 'completed' ? 'bg-green-100 text-green-800' :
+                          log.status.toLowerCase() === 'failed' ? 'bg-red-100 text-red-800' :
+                          log.status.toLowerCase() === 'in-progress' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {log.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {log.totalDuration ? `${Math.floor(log.totalDuration / 60)}m ${log.totalDuration % 60}s` : '—'}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {log.recordingUrl ? (
+                           <div className="flex justify-center">
+                             <a href={log.recordingUrl} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-700 bg-blue-50 p-1.5 rounded-full hover:bg-blue-100 transition-colors">
+                               <Play className="w-4 h-4 fill-current" />
+                             </a>
+                           </div>
+                        ) : <span className="text-gray-300">—</span>}
+                      </td>
+                      <td className="px-6 py-4 text-right font-medium whitespace-nowrap">
+                        {log.totalCost !== null ? `$${log.totalCost.toFixed(4)}` : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </div>
+
       {role === 'SUPER_ADMIN' && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mt-6 overflow-hidden">
           <h3 className="text-lg font-bold text-gray-900 mb-4">Twilio Account Summary</h3>
           {loadingQuota ? (
             <p className="text-gray-500 text-sm">Loading...</p>
           ) : quota ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div>
                 <p className="text-sm font-medium text-gray-500 mb-1">Available Balance</p>
                 <p className="text-3xl font-bold text-green-600">

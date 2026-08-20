@@ -217,6 +217,7 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
     try {
       const decoded = request.user as any;
       const { id } = request.params as { id: string };
+      const { startDate, endDate, page, limit } = request.query as any;
 
       const twilioNum = await prisma.twilioNumber.findUnique({ where: { id } });
       if (!twilioNum) {
@@ -229,16 +230,35 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
         whereClause.userId = decoded.id;
       }
 
-      const calls = await prisma.call.findMany({
-        where: whereClause,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          legs: {
-            orderBy: { createdAt: 'asc' }
-          },
-          user: { select: { name: true, email: true, phoneNumber: true } }
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        if (start.getTime() === end.getTime()) {
+          end.setHours(23, 59, 59, 999);
+        } else {
+          end.setHours(23, 59, 59, 999);
         }
-      });
+        whereClause.createdAt = { gte: start, lte: end };
+      }
+
+      const take = limit ? parseInt(limit) : undefined;
+      const skip = page && limit ? (parseInt(page) - 1) * parseInt(limit) : undefined;
+
+      const [calls, totalCount] = await Promise.all([
+        prisma.call.findMany({
+          where: whereClause,
+          take,
+          skip,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            legs: {
+              orderBy: { createdAt: 'asc' }
+            },
+            user: { select: { name: true, email: true, phoneNumber: true } }
+          }
+        }),
+        prisma.call.count({ where: whereClause })
+      ]);
 
       // Auto-sync missing costs/durations for completed calls from Twilio
       try {
@@ -355,7 +375,13 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
         request.log.error({ syncErr }, 'Failed to sync call costs');
       }
 
-      return reply.send({ logs: calls });
+      return reply.send({ 
+        logs: calls,
+        totalCount,
+        page: page ? parseInt(page) : 1,
+        limit: limit ? parseInt(limit) : undefined,
+        totalPages: limit ? Math.ceil(totalCount / parseInt(limit)) : 1
+      });
     } catch (error: any) {
       request.log.error(error);
       return reply
