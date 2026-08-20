@@ -67,7 +67,6 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
           where: { sid: num.sid },
           update: {
             phoneNumber: num.phoneNumber,
-            locality: (num as any).locality || null,
             capabilities: capabilitiesObj,
             status: 'ACTIVE',
             twilioData: num as any
