@@ -245,7 +245,8 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
         const telephony = ProviderFactory.getTelephonyProvider() as any;
         if (telephony.client) {
           for (const c of calls) {
-            if ((c.status === 'completed' || c.status === 'COMPLETED') && (c.totalCost === null || c.totalDuration === null)) {
+            const isRecent = (new Date().getTime() - c.createdAt.getTime()) < 15 * 60 * 1000;
+            if ((c.status === 'completed' || c.status === 'COMPLETED') && (c.totalCost === null || c.totalDuration === null || isRecent)) {
               const masterLeg = c.legs.find((l: any) => l.direction === 'Inbound' || !l.callId /* fallback */) || c.legs[0];
               if (masterLeg) {
                 const twilioCall = await telephony.client.calls(masterLeg.callSid).fetch();
@@ -314,6 +315,24 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
                 });
                 c.totalDuration = finalDuration;
                 c.totalCost = totalCost;
+
+                // Recover recording if missing
+                if (!c.recordingUrl) {
+                  try {
+                    const recordings = await telephony.client.recordings.list({ callSid: masterLeg.callSid });
+                    if (recordings && recordings.length > 0) {
+                      const rec = recordings[0];
+                      const minio = ProviderFactory.getStorageProvider();
+                      // Twilio provides a media url, we remove .json to get the base uri
+                      const baseUri = `https://api.twilio.com${rec.uri.replace('.json', '')}`;
+                      const uploadedUrl = await minio.uploadTwilioRecording(baseUri, masterLeg.callSid);
+                      await prisma.call.update({ where: { id: c.id }, data: { recordingUrl: uploadedUrl } });
+                      c.recordingUrl = uploadedUrl;
+                    }
+                  } catch (recErr) {
+                    // ignore if no recordings
+                  }
+                }
               }
             }
           }

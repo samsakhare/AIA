@@ -65,8 +65,13 @@ export class MinioProvider {
 
   async uploadTwilioRecording(recordingUrl: string, callSid: string): Promise<string> {
     try {
-      const twilioSid = process.env.TWILIO_ACCOUNT_SID;
-      const twilioAuth = process.env.TWILIO_AUTH_TOKEN;
+      let twilioSid = process.env.TWILIO_ACCOUNT_SID;
+      let twilioAuth = process.env.TWILIO_AUTH_TOKEN;
+      
+      if (!twilioAuth && process.env.TWILIO_API_KEY && process.env.TWILIO_API_SECRET) {
+        twilioSid = process.env.TWILIO_API_KEY;
+        twilioAuth = process.env.TWILIO_API_SECRET;
+      }
       
       // Twilio recordings are usually accessible by appending .mp3 or .wav
       const response = await axios.get(`${recordingUrl}.mp3`, { 

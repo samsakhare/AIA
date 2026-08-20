@@ -396,6 +396,7 @@ export default function AIPhoneNumbersPage() {
                                 </div>
                                 <div className="flex items-center gap-4">
                                   <span className="text-gray-500">{leg.duration ? `${leg.duration}s` : '-'}</span>
+                                  <span className="text-gray-500 font-mono text-xs bg-gray-50 px-2 py-1 rounded">{leg.cost ? `$${leg.cost}` : '-'}</span>
                                   <span className="text-gray-400 capitalize">{leg.status}</span>
                                 </div>
                               </div>
