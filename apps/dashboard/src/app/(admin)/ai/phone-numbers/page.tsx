@@ -350,6 +350,20 @@ export default function AIPhoneNumbersPage() {
                             <p className="text-xs text-gray-500 font-medium">DURATION</p>
                             <p className="text-sm">{log.totalDuration ? `${log.totalDuration}s` : '-'}</p>
                           </div>
+                          <div>
+                            <p className="text-xs text-gray-500 font-medium">COST</p>
+                            <p className="text-sm">{log.totalCost ? `$${log.totalCost}` : '-'}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 font-medium">RECORDING</p>
+                            <p className="text-sm">
+                              {log.recordingUrl ? (
+                                <span className="text-blue-600 font-medium">Yes</span>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
+                            </p>
+                          </div>
                         </div>
                         <div className="flex items-center gap-4">
                           <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${log.status === 'completed' || log.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
