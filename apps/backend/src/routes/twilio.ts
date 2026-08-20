@@ -256,7 +256,15 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
                 
                 // Sync child legs
                 for (const l of c.legs) {
-                  const twCall = l.callSid === masterLeg.callSid ? twilioCall : twilioLegs.find((t: any) => t.sid === l.callSid);
+                  let twCall = l.callSid === masterLeg.callSid ? twilioCall : twilioLegs.find((t: any) => t.sid === l.callSid);
+                  if (!twCall && l.callSid !== masterLeg.callSid) {
+                    try {
+                      twCall = await telephony.client.calls(l.callSid).fetch();
+                    } catch (e) {
+                      // Skip if invalid callSid
+                    }
+                  }
+                  
                   if (twCall) {
                     const legCost = twCall.price ? Math.abs(parseFloat(twCall.price)) : null;
                     const legDuration = twCall.duration ? parseInt(twCall.duration) : null;
@@ -336,7 +344,7 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
                       c.recordingUrl = uploadedUrl;
                     }
                   } catch (recErr) {
-                    // ignore if no recordings
+                    console.error(`Failed to recover recording for call ${c.id}:`, recErr);
                   }
                 }
               }
