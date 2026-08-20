@@ -1,6 +1,7 @@
 import './env';
 import fastify from 'fastify';
 import cors from '@fastify/cors';
+import formbody from '@fastify/formbody';
 import jwt from 'fastify-jwt';
 import bcrypt from 'bcrypt';
 import { prisma } from '@saas-poc/shared';
@@ -10,6 +11,8 @@ import userRoutes from './routes/users';
 import twilioRoutes from './routes/twilio';
 
 const app = fastify({ logger: true });
+
+app.register(formbody);
 
 app.register(cors, {
   origin: true,
