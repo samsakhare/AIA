@@ -1,7 +1,95 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { API_URL } from '@/config/api';
-import { Phone, CircleDollarSign, Clock, PhoneCall, ArrowRightLeft, ArrowLeftRight, CheckCircle2, XCircle, ArrowUpRight, ArrowDownLeft, Calendar, FileText, Play, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Phone, CircleDollarSign, Clock, PhoneCall, ArrowRightLeft, ArrowLeftRight, CheckCircle2, XCircle, ArrowUpRight, ArrowDownLeft, Calendar, FileText, Play, Pause, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const MiniAudioPlayer = ({ src }: { src: string }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const formatTime = (time: number) => {
+    if (isNaN(time)) return "0:00";
+    const m = Math.floor(time / 60);
+    const s = Math.floor(time % 60);
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      const current = audioRef.current.currentTime;
+      const total = audioRef.current.duration;
+      setCurrentTime(current);
+      setProgress((current / total) * 100);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (audioRef.current) {
+      setDuration(audioRef.current.duration);
+    }
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (audioRef.current) {
+      const seekTime = (Number(e.target.value) / 100) * duration;
+      audioRef.current.currentTime = seekTime;
+      setProgress(Number(e.target.value));
+    }
+  };
+
+  const handleEnded = () => {
+    setIsPlaying(false);
+    setProgress(0);
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full px-2.5 py-1.5 w-full min-w-[140px] max-w-[180px]">
+      <audio 
+        ref={audioRef} 
+        src={src} 
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleLoadedMetadata}
+        onEnded={handleEnded}
+      />
+      <button 
+        onClick={togglePlay}
+        className="w-7 h-7 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 flex-shrink-0 transition-colors"
+      >
+        {isPlaying ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current ml-0.5" />}
+      </button>
+      <div className="flex-1 flex items-center gap-2">
+        <input 
+          type="range" 
+          min="0" 
+          max="100" 
+          value={progress || 0}
+          onChange={handleSeek}
+          className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+        />
+        <span className="text-[10px] text-gray-500 font-medium tabular-nums min-w-[24px]">
+          {formatTime(currentTime)}
+        </span>
+      </div>
+    </div>
+  );
+};
 
 interface QuotaLimit {
   product: string;
@@ -183,7 +271,7 @@ export default function DashboardHome() {
     setLogsLoading(true);
     const token = localStorage.getItem('token');
     
-    fetch(`${API_URL}/twilio/phone-numbers/${selectedPhoneId}/logs?startDate=${startDate}&endDate=${endDate}&page=${logsPage}&limit=10`, {
+    fetch(`${API_URL}/twilio/phone-numbers/${selectedPhoneId}/logs?startDate=${startDate}&endDate=${endDate}&page=${logsPage}&limit=5`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -303,10 +391,10 @@ export default function DashboardHome() {
           {loadingMetrics ? (
             <div className="h-9 w-16 bg-gray-200 animate-pulse rounded mt-2"></div>
           ) : (
-            <div className="flex items-end gap-3 mt-2">
+            <div className="flex flex-col mt-2">
               <p className="text-4xl font-bold text-gray-900">{metrics?.totalCalls || 0}</p>
-              <div className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md text-xs font-semibold mb-1 border border-blue-100">
-                {avgCalls.toFixed(1)} <span className="font-normal opacity-80">{callsLabel}</span>
+              <div className="text-sm font-medium mt-1">
+                <span className="text-blue-600 font-semibold">{avgCalls.toFixed(1)}</span> <span className="text-gray-500">{callsLabel}</span>
               </div>
             </div>
           )}
@@ -320,12 +408,12 @@ export default function DashboardHome() {
           {loadingMetrics ? (
             <div className="h-9 w-24 bg-gray-200 animate-pulse rounded mt-2"></div>
           ) : (
-            <div className="flex items-end gap-3 mt-2">
+            <div className="flex flex-col mt-2">
               <p className="text-4xl font-bold text-gray-900">
                 ${(metrics?.totalCost || 0).toFixed(4)}
               </p>
-              <div className="bg-green-50 text-green-700 px-2.5 py-1 rounded-md text-xs font-semibold mb-1 border border-green-100">
-                ${avgCost.toFixed(4)} <span className="font-normal opacity-80">avg / call</span>
+              <div className="text-sm font-medium mt-1">
+                <span className="text-green-600 font-semibold">${avgCost.toFixed(4)}</span> <span className="text-gray-500">avg / call</span>
               </div>
             </div>
           )}
@@ -339,12 +427,12 @@ export default function DashboardHome() {
           {loadingMetrics ? (
             <div className="h-9 w-24 bg-gray-200 animate-pulse rounded mt-2"></div>
           ) : (
-            <div className="flex items-end gap-3 mt-2">
+            <div className="flex flex-col mt-2">
               <p className="text-4xl font-bold text-gray-900">
                 {Math.floor((metrics?.totalDuration || 0) / 60)}m {(metrics?.totalDuration || 0) % 60}s
               </p>
-              <div className="bg-purple-50 text-purple-700 px-2.5 py-1 rounded-md text-xs font-semibold mb-1 border border-purple-100 whitespace-nowrap">
-                {Math.floor(avgDuration / 60)}m {Math.floor(avgDuration % 60)}s <span className="font-normal opacity-80">avg / call</span>
+              <div className="text-sm font-medium mt-1">
+                <span className="text-purple-600 font-semibold">{Math.floor(avgDuration / 60)}m {Math.floor(avgDuration % 60)}s</span> <span className="text-gray-500">avg / call</span>
               </div>
             </div>
           )}
@@ -352,7 +440,7 @@ export default function DashboardHome() {
       </div>
 
       {/* Main Bottom Section */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-6 gap-6">
         
         {/* Left Column: Assigned Phone Numbers */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col xl:col-span-1 h-full min-h-[400px]">
@@ -395,7 +483,7 @@ export default function DashboardHome() {
         </div>
 
         {/* Right Column: Call Logs */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col xl:col-span-2 min-h-[500px]">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col xl:col-span-5 min-h-[500px]">
           <div className="p-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
             <div>
               <h3 className="text-lg font-bold text-gray-900">Call Logs</h3>
@@ -483,7 +571,7 @@ export default function DashboardHome() {
                       <td className="px-6 py-4 text-center">
                         {log.recordingUrl ? (
                            <div className="flex justify-center min-w-[200px]">
-                             <audio controls src={log.recordingUrl} className="h-8 w-full max-w-[200px] outline-none" />
+                             <MiniAudioPlayer src={log.recordingUrl} />
                            </div>
                         ) : <span className="text-gray-300">—</span>}
                       </td>

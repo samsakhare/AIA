@@ -25,15 +25,20 @@ export default async function dashboardRoutes(fastify: FastifyInstance) {
       
       // Ensure endDate covers the entire day
       end.setHours(23, 59, 59, 999);
+      
+      const whereClause: any = {
+        createdAt: {
+          gte: start,
+          lte: end,
+        },
+      };
+      
+      if (user.role !== 'SUPER_ADMIN') {
+        whereClause.userId = user.id;
+      }
 
       const result = await prisma.call.aggregate({
-        where: {
-          userId: user.id,
-          createdAt: {
-            gte: start,
-            lte: end,
-          },
-        },
+        where: whereClause,
         _sum: {
           totalCost: true,
           totalDuration: true,
