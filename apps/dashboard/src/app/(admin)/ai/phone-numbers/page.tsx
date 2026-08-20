@@ -59,7 +59,7 @@ export default function AIPhoneNumbersPage() {
   const fetchNumbers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/twilio/phone-numbers`, {
+      const res = await fetch(`${API_URL}/twilio/phone-numbers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to fetch numbers');
@@ -81,7 +81,7 @@ export default function AIPhoneNumbersPage() {
     setSavingPhone(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/users/me`, {
+      const res = await fetch(`${API_URL}/users/me`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +105,7 @@ export default function AIPhoneNumbersPage() {
     setLoadingLogs(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/twilio/phone-numbers/${numberId}/logs`, {
+      const res = await fetch(`${API_URL}/twilio/phone-numbers/${numberId}/logs`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to fetch logs');

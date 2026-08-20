@@ -40,7 +40,7 @@ export default function PhoneNumbersPage() {
     setLoadingLogs(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/twilio/phone-numbers/${numberId}/logs`, {
+      const res = await fetch(`${API_URL}/twilio/phone-numbers/${numberId}/logs`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to fetch logs');
