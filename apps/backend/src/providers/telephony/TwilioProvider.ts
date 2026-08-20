@@ -24,10 +24,14 @@ export class TwilioProvider implements ITelephonyProvider {
     conferenceName: string,
     webhookUrl: string
   ): Promise<void> {
+    const callbackUrl = `${webhookUrl}/twilio/owner-answered?conferenceName=${encodeURIComponent(conferenceName)}&customerNumber=${encodeURIComponent(customerNumber)}`;
+    
     await this.client.calls.create({
       to: ownerNumber,
       from: customerNumber,
-      twiml: `<Response><Dial><Conference>${conferenceName}</Conference></Dial></Response>`
+      twiml: `<Response><Dial><Conference startConferenceOnEnter="true" endConferenceOnExit="false">${conferenceName}</Conference></Dial></Response>`,
+      statusCallback: callbackUrl,
+      statusCallbackEvent: ['answered']
     });
   }
 
@@ -46,5 +50,9 @@ export class TwilioProvider implements ITelephonyProvider {
       from: fromNumber,
       twiml: `<Response><Dial><Conference>${conferenceName}</Conference></Dial></Response>`
     });
+  }
+
+  async redirectCall(callSid: string, twiml: string): Promise<void> {
+    await this.client.calls(callSid).update({ twiml });
   }
 }
