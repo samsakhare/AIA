@@ -215,6 +215,34 @@ export default function DashboardHome() {
     }
   };
 
+  const getAverages = () => {
+    if (!metrics) return { avgCalls: 0, callsLabel: 'per day', avgCost: 0, avgDuration: 0 };
+    
+    let daysInclusive = 1;
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      daysInclusive = Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 3600 * 24)) + 1);
+    }
+    
+    let avgCalls = 0;
+    let callsLabel = '';
+    if (daysInclusive <= 1) {
+      avgCalls = metrics.totalCalls / 24;
+      callsLabel = 'per hour';
+    } else {
+      avgCalls = metrics.totalCalls / daysInclusive;
+      callsLabel = 'per day';
+    }
+    
+    const avgCost = metrics.totalCalls > 0 ? metrics.totalCost / metrics.totalCalls : 0;
+    const avgDuration = metrics.totalCalls > 0 ? metrics.totalDuration / metrics.totalCalls : 0;
+    
+    return { avgCalls, callsLabel, avgCost, avgDuration };
+  };
+
+  const { avgCalls, callsLabel, avgCost, avgDuration } = getAverages();
+
   return (
     <div className="space-y-6 max-w-full overflow-hidden">
       <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
@@ -275,7 +303,12 @@ export default function DashboardHome() {
           {loadingMetrics ? (
             <div className="h-9 w-16 bg-gray-200 animate-pulse rounded mt-2"></div>
           ) : (
-            <p className="text-4xl font-bold text-gray-900 mt-2">{metrics?.totalCalls || 0}</p>
+            <div className="flex items-end gap-3 mt-2">
+              <p className="text-4xl font-bold text-gray-900">{metrics?.totalCalls || 0}</p>
+              <div className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md text-xs font-semibold mb-1 border border-blue-100">
+                {avgCalls.toFixed(1)} <span className="font-normal opacity-80">{callsLabel}</span>
+              </div>
+            </div>
           )}
         </div>
         
@@ -287,9 +320,14 @@ export default function DashboardHome() {
           {loadingMetrics ? (
             <div className="h-9 w-24 bg-gray-200 animate-pulse rounded mt-2"></div>
           ) : (
-            <p className="text-4xl font-bold text-gray-900 mt-2">
-              ${(metrics?.totalCost || 0).toFixed(4)}
-            </p>
+            <div className="flex items-end gap-3 mt-2">
+              <p className="text-4xl font-bold text-gray-900">
+                ${(metrics?.totalCost || 0).toFixed(4)}
+              </p>
+              <div className="bg-green-50 text-green-700 px-2.5 py-1 rounded-md text-xs font-semibold mb-1 border border-green-100">
+                ${avgCost.toFixed(4)} <span className="font-normal opacity-80">avg / call</span>
+              </div>
+            </div>
           )}
         </div>
         
@@ -301,9 +339,14 @@ export default function DashboardHome() {
           {loadingMetrics ? (
             <div className="h-9 w-24 bg-gray-200 animate-pulse rounded mt-2"></div>
           ) : (
-            <p className="text-4xl font-bold text-gray-900 mt-2">
-              {Math.floor((metrics?.totalDuration || 0) / 60)}m {(metrics?.totalDuration || 0) % 60}s
-            </p>
+            <div className="flex items-end gap-3 mt-2">
+              <p className="text-4xl font-bold text-gray-900">
+                {Math.floor((metrics?.totalDuration || 0) / 60)}m {(metrics?.totalDuration || 0) % 60}s
+              </p>
+              <div className="bg-purple-50 text-purple-700 px-2.5 py-1 rounded-md text-xs font-semibold mb-1 border border-purple-100 whitespace-nowrap">
+                {Math.floor(avgDuration / 60)}m {Math.floor(avgDuration % 60)}s <span className="font-normal opacity-80">avg / call</span>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -439,10 +482,8 @@ export default function DashboardHome() {
                       </td>
                       <td className="px-6 py-4 text-center">
                         {log.recordingUrl ? (
-                           <div className="flex justify-center">
-                             <a href={log.recordingUrl} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-700 bg-blue-50 p-1.5 rounded-full hover:bg-blue-100 transition-colors">
-                               <Play className="w-4 h-4 fill-current" />
-                             </a>
+                           <div className="flex justify-center min-w-[200px]">
+                             <audio controls src={log.recordingUrl} className="h-8 w-full max-w-[200px] outline-none" />
                            </div>
                         ) : <span className="text-gray-300">—</span>}
                       </td>
