@@ -152,8 +152,12 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
   });
 
   fastify.post('/twilio/dial-action', async (request, reply) => {
-    const { CallSid, DialCallStatus, DialCallDuration } = request.body as any;
+    const { CallSid, DialCallStatus, DialCallDuration, CallStatus, CallDuration } = request.body as any;
     
+    const protocol = request.headers['x-forwarded-proto'] || 'https';
+    const host = request.headers.host || 'aia-api.srv1575169.hstgr.cloud';
+    const baseUrl = `${protocol}://${host}/webhooks`;
+
     if (hijackedCalls.has(CallSid)) {
       hijackedCalls.delete(CallSid);
       const conferenceName = 'conf_' + CallSid;
@@ -162,7 +166,7 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
         .type('text/xml')
         .send(`
           <Response>
-            <Dial>
+            <Dial action="${baseUrl}/twilio/master-conference-end">
               <Conference startConferenceOnEnter="true" endConferenceOnExit="true">${conferenceName}</Conference>
             </Dial>
           </Response>
@@ -172,15 +176,38 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
     // Call ended without hijack (rejected, missed, or normal hangup)
     // Send final status update to the parent leg
     try {
+      const finalStatus = CallStatus === 'completed' ? 'completed' : (DialCallStatus || CallStatus);
+      const duration = CallDuration ? parseInt(CallDuration) : (DialCallDuration ? parseInt(DialCallDuration) : undefined);
       await prisma.callLeg.update({
         where: { callSid: CallSid },
-        data: { status: DialCallStatus, duration: DialCallDuration ? parseInt(DialCallDuration) : undefined }
+        data: { status: finalStatus, duration }
       });
       const leg = await prisma.callLeg.findUnique({ where: { callSid: CallSid } });
       if (leg) {
         await prisma.call.update({
           where: { id: leg.callId },
-          data: { status: DialCallStatus, totalDuration: DialCallDuration ? parseInt(DialCallDuration) : undefined }
+          data: { status: finalStatus, totalDuration: duration }
+        });
+      }
+    } catch (e) {}
+
+    return reply.type('text/xml').send(`<Response><Hangup/></Response>`);
+  });
+
+  fastify.post('/twilio/master-conference-end', async (request, reply) => {
+    const { CallSid, CallStatus, CallDuration } = request.body as any;
+    
+    try {
+      const duration = CallDuration ? parseInt(CallDuration) : undefined;
+      await prisma.callLeg.update({
+        where: { callSid: CallSid },
+        data: { status: CallStatus || 'completed', duration }
+      });
+      const leg = await prisma.callLeg.findUnique({ where: { callSid: CallSid } });
+      if (leg) {
+        await prisma.call.update({
+          where: { id: leg.callId },
+          data: { status: CallStatus || 'completed', totalDuration: duration }
         });
       }
     } catch (e) {}
