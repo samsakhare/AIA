@@ -9,6 +9,7 @@ import webhookRoutes from './routes/webhooks';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import twilioRoutes from './routes/twilio';
+import dashboardRoutes from './routes/dashboard';
 
 const app = fastify({ logger: true });
 
@@ -26,6 +27,7 @@ app.register(webhookRoutes, { prefix: '/webhooks' });
 app.register(authRoutes, { prefix: '/auth' });
 app.register(userRoutes, { prefix: '/users' });
 app.register(twilioRoutes, { prefix: '/twilio' });
+app.register(dashboardRoutes, { prefix: '/dashboard' });
 
 app.get('/health', async () => {
   return { status: 'ok', timestamp: new Date().toISOString() };
