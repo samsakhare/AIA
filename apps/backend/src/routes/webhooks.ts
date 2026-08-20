@@ -56,7 +56,7 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
       .type('text/xml')
       .send(`
         <Response>
-          <Dial action="${baseUrl}/twilio/dial-action">
+          <Dial callerId="${To}" action="${baseUrl}/twilio/dial-action">
             <Number statusCallback="${statusCallbackUrl}" statusCallbackEvent="answered">
               ${ownerNumber}
             </Number>
