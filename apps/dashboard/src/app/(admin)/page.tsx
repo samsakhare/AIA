@@ -60,7 +60,7 @@ const MiniAudioPlayer = ({ src }: { src: string }) => {
   };
 
   return (
-    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full px-2.5 py-1.5 w-full min-w-[140px] max-w-[180px]">
+    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full px-2.5 py-1.5 w-full min-w-[120px] max-w-[150px]">
       <audio 
         ref={audioRef} 
         src={src} 
@@ -121,6 +121,12 @@ interface TwilioNumber {
   status: string;
   locality?: string;
   capabilities?: any;
+  user?: {
+    id: string;
+    name: string | null;
+    email: string;
+    phoneNumber: string | null;
+  };
 }
 
 interface CallLog {
@@ -440,7 +446,7 @@ export default function DashboardHome() {
       </div>
 
       {/* Main Bottom Section */}
-      <div className="grid grid-cols-1 xl:grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
         
         {/* Left Column: Assigned Phone Numbers */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col xl:col-span-1 h-full min-h-[400px]">
@@ -472,6 +478,16 @@ export default function DashboardHome() {
                       <div>
                         <p className={`font-semibold ${selectedPhoneId === num.id ? 'text-blue-900' : 'text-gray-800'}`}>{num.phoneNumber}</p>
                         <p className="text-xs text-gray-500">{num.locality || 'Unknown location'}</p>
+                        {num.user && (
+                          <div className="mt-2 flex flex-col items-start gap-1">
+                            <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] rounded-full font-medium">
+                              Assigned to: {num.user.name || 'Unknown User'}
+                            </span>
+                            <span className="text-[10px] text-gray-400">
+                              {num.user.email} {num.user.phoneNumber ? ` | ${num.user.phoneNumber}` : ''}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                     {selectedPhoneId === num.id && <ChevronRight className="w-5 h-5 text-blue-500" />}
@@ -483,7 +499,7 @@ export default function DashboardHome() {
         </div>
 
         {/* Right Column: Call Logs */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col xl:col-span-5 min-h-[500px]">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col xl:col-span-3 min-h-[500px]">
           <div className="p-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
             <div>
               <h3 className="text-lg font-bold text-gray-900">Call Logs</h3>
@@ -570,7 +586,7 @@ export default function DashboardHome() {
                       </td>
                       <td className="px-6 py-4 text-center">
                         {log.recordingUrl ? (
-                           <div className="flex justify-center min-w-[200px]">
+                           <div className="flex justify-center min-w-[130px]">
                              <MiniAudioPlayer src={log.recordingUrl} />
                            </div>
                         ) : <span className="text-gray-300">—</span>}
