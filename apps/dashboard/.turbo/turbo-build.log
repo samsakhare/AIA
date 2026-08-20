@@ -1,26 +1,28 @@
 
-> dashboard@1.0.5 build
+> dashboard@1.0.7 build
 > next build
 
 ▲ Next.js 16.3.1 (Turbopack)
-✓ Running next.config.ts took 47ms
+✓ Running next.config.ts took 38ms
 
   Creating an optimized production build ...
-✓ Compiled successfully in 1206ms
+✓ Compiled successfully in 1073ms
   Running TypeScript ...
-  Finished TypeScript in 4.4s ...
-  Collecting page data using 10 workers ...
-  Generating static pages using 10 workers (0/9) ...
-  Generating static pages using 10 workers (2/9) 
-  Generating static pages using 10 workers (4/9) 
-  Generating static pages using 10 workers (6/9) 
-✓ Generating static pages using 10 workers (9/9) in 1216ms
+  Finished TypeScript in 3.3s ...
+  Collecting page data using 12 workers ...
+  Generating static pages using 12 workers (0/11) ...
+  Generating static pages using 12 workers (2/11) 
+  Generating static pages using 12 workers (5/11) 
+  Generating static pages using 12 workers (8/11) 
+✓ Generating static pages using 12 workers (11/11) in 875ms
   Finalizing page optimization ...
 
 Route (app)
 ┌ ○ /
 ├ ○ /_not-found
+├ ○ /ai/phone-numbers
 ├ ○ /login
+├ ○ /profile
 ├ ○ /signup
 ├ ○ /twilio/phone-numbers
 ├ ○ /twilio/quota

@@ -5,16 +5,10 @@ import path from 'path';
 import { prisma } from '@saas-poc/shared';
 
 export default async function twilioRoutes(fastify: FastifyInstance) {
-  // Middleware to check if user is super admin
+  // Middleware to check if user is authenticated
   fastify.addHook('onRequest', async (request, reply) => {
     try {
       await request.jwtVerify();
-      const decoded = request.user as any;
-      if (decoded.role !== 'SUPER_ADMIN') {
-        return reply
-          .status(403)
-          .send({ error: 'Unauthorized. Only Super Admins can access Twilio settings.' });
-      }
     } catch (err) {
       return reply.status(401).send({ error: 'Authentication required' });
     }
@@ -23,7 +17,11 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
   // Get local DB phone numbers
   fastify.get('/phone-numbers', async (request, reply) => {
     try {
+      const decoded = request.user as any;
+      const whereClause = decoded.role === 'SUPER_ADMIN' ? {} : { userId: decoded.id };
+      
       const numbers = await prisma.twilioNumber.findMany({
+        where: whereClause,
         orderBy: { createdAt: 'desc' },
         include: { user: { select: { id: true, name: true, email: true, phoneNumber: true } } }
       });
@@ -38,6 +36,8 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
 
   // Sync phone numbers from Twilio API
   fastify.post('/phone-numbers/sync', async (request, reply) => {
+    const decoded = request.user as any;
+    if (decoded.role !== 'SUPER_ADMIN') return reply.status(403).send({ error: 'Forbidden' });
     try {
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
       const apiKey = process.env.TWILIO_API_KEY;
@@ -103,8 +103,10 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Assign user to phone number
+  // Assign a user to a Twilio number
   fastify.put('/phone-numbers/:id/assign', async (request, reply) => {
+    const decoded = request.user as any;
+    if (decoded.role !== 'SUPER_ADMIN') return reply.status(403).send({ error: 'Forbidden' });
     try {
       const { id } = request.params as { id: string };
       const { userId } = request.body as { userId: string | null };
@@ -114,28 +116,34 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
         data: { userId },
         include: { user: { select: { id: true, name: true, email: true, phoneNumber: true } } }
       });
-      return reply.send({ success: true, phoneNumber: updated });
+
+      return reply.send({ success: true, phone: updated });
     } catch (error: any) {
       request.log.error(error);
-      return reply.status(500).send({ error: 'Failed to assign user to phone number' });
+      return reply.status(500).send({ error: 'Failed to assign user', details: error.message });
     }
   });
 
-  // Delete local phone number
+  // Delete a Twilio number (only locally)
   fastify.delete('/phone-numbers/:id', async (request, reply) => {
+    const decoded = request.user as any;
+    if (decoded.role !== 'SUPER_ADMIN') return reply.status(403).send({ error: 'Forbidden' });
     try {
       const { id } = request.params as { id: string };
-      await prisma.twilioNumber.delete({
-        where: { id }
-      });
+
+      await prisma.twilioNumber.delete({ where: { id } });
+
       return reply.send({ success: true });
     } catch (error: any) {
       request.log.error(error);
-      return reply.status(500).send({ error: 'Failed to delete phone number' });
+      return reply.status(500).send({ error: 'Failed to delete phone number', details: error.message });
     }
   });
 
+  // Get usage quota from Twilio API
   fastify.get('/quota', async (request, reply) => {
+    const decoded = request.user as any;
+    if (decoded.role !== 'SUPER_ADMIN') return reply.status(403).send({ error: 'Forbidden' });
     try {
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
       const apiKey = process.env.TWILIO_API_KEY;

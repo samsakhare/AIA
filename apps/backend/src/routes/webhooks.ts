@@ -20,20 +20,33 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
       }
     }
 
+    const twilioRecord = await prisma.twilioNumber.findUnique({
+      where: { phoneNumber: To },
+      include: { user: true }
+    });
+
+    const ownerNumber = twilioRecord?.user?.phoneNumber;
+
+    if (!ownerNumber) {
+      request.log.info({ To }, 'Incoming call to unassigned Twilio number');
+      return reply
+        .type('text/xml')
+        .send(`<Response><Say>This number is currently unassigned.</Say></Response>`);
+    }
+
     const telephony = ProviderFactory.getTelephonyProvider();
     const voiceAi = ProviderFactory.getVoiceAgentProvider();
 
     const conferenceName = 'conf_' + CallSid;
-    const tenantId = 'mock-tenant-id';
-    const ownerNumber = '+1234567890'; // In real app, query from DB
+    const tenantId = twilioRecord?.user?.tenantId || 'default-tenant';
 
-    // Dial the owner
+    // Dial the owner, using the Twilio number as the Caller ID
     await telephony.createConferenceAndDialOwner(
       tenantId,
       ownerNumber,
-      From,
+      To, // Use the Twilio number to avoid unverified Caller ID errors
       conferenceName,
-      'https://ngrok.url'
+      ''
     );
 
     // Dial VAPI via SIP if configured in env

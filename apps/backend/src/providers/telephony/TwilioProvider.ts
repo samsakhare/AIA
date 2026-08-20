@@ -5,7 +5,16 @@ export class TwilioProvider implements ITelephonyProvider {
   private client: twilio.Twilio;
 
   constructor() {
-    this.client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+    const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
+    const apiKey = process.env.TWILIO_API_KEY;
+    const apiSecret = process.env.TWILIO_API_SECRET;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+
+    if (apiKey && apiSecret) {
+      this.client = twilio(apiKey, apiSecret, { accountSid });
+    } else {
+      this.client = twilio(accountSid, authToken as string);
+    }
   }
 
   async createConferenceAndDialOwner(
