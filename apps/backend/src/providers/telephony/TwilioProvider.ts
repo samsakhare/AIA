@@ -43,13 +43,19 @@ export class TwilioProvider implements ITelephonyProvider {
   async dialSipIntoConference(
     conferenceName: string,
     sipUri: string,
-    fromNumber: string
+    fromNumber: string,
+    webhookUrl?: string
   ): Promise<void> {
-    await this.client.calls.create({
+    const callArgs: any = {
       to: sipUri,
       from: fromNumber,
       twiml: `<Response><Dial><Conference>${conferenceName}</Conference></Dial></Response>`
-    });
+    };
+    if (webhookUrl) {
+      callArgs.statusCallback = `${webhookUrl}/twilio/status`;
+      callArgs.statusCallbackEvent = ['initiated', 'ringing', 'answered', 'completed'];
+    }
+    await this.client.calls.create(callArgs);
   }
 
   async redirectCall(callSid: string, twiml: string): Promise<void> {

@@ -47,20 +47,24 @@ export default function AIPhoneNumbersPage() {
   const [newPhoneNumber, setNewPhoneNumber] = useState('');
   const [savingPhone, setSavingPhone] = useState(false);
 
+  const [viewingLogs, setViewingLogs] = useState<string | null>(null);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+  const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
+
   useEffect(() => {
     fetchNumbers();
   }, []);
 
   const fetchNumbers = async () => {
     try {
-      const res = await fetch(`${API_URL}/twilio/phone-numbers`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/twilio/phone-numbers`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
+      if (!res.ok) throw new Error('Failed to fetch numbers');
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to fetch phone numbers');
-      setNumbers(data.phoneNumbers || []);
+      setNumbers(data.phoneNumbers);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -74,29 +78,43 @@ export default function AIPhoneNumbersPage() {
   };
 
   const submitPhoneChange = async () => {
-    if (!newPhoneNumber.trim()) return;
     setSavingPhone(true);
     try {
-      const res = await fetch(`${API_URL}/users/me`, {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/users/me`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ phoneNumber: newPhoneNumber })
       });
       if (!res.ok) throw new Error('Failed to update phone number');
       
-      // Update local storage just in case
-      const existingUser = JSON.parse(localStorage.getItem('user') || '{}');
-      localStorage.setItem('user', JSON.stringify({ ...existingUser, phoneNumber: newPhoneNumber }));
-      
       await fetchNumbers();
       setEditingPhone(false);
-    } catch (error: any) {
-      alert(error.message || 'Failed to update phone number');
+    } catch (err: any) {
+      alert(err.message);
     } finally {
       setSavingPhone(false);
+    }
+  };
+
+  const handleViewLogs = async (numberId: string) => {
+    setViewingLogs(numberId);
+    setLoadingLogs(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/twilio/phone-numbers/${numberId}/logs`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to fetch logs');
+      const data = await res.json();
+      setLogs(data.logs);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingLogs(false);
     }
   };
 
@@ -140,6 +158,7 @@ export default function AIPhoneNumbersPage() {
                   <th className="px-6 py-4">Locality</th>
                   <th className="px-6 py-4">Capabilities</th>
                   <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -212,6 +231,14 @@ export default function AIPhoneNumbersPage() {
                         </span>
                       </div>
                     </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => handleViewLogs(num.id)}
+                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        View Logs
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -265,6 +292,121 @@ export default function AIPhoneNumbersPage() {
                   Save Changes
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Logs Panel */}
+      {viewingLogs && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex justify-end">
+          <div className="bg-white w-full max-w-3xl h-full shadow-2xl overflow-y-auto flex flex-col">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Call Logs</h2>
+                <p className="text-sm text-gray-500">History for this Twilio number</p>
+              </div>
+              <button
+                onClick={() => setViewingLogs(null)}
+                className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="p-6 flex-1 bg-gray-50">
+              {loadingLogs ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                </div>
+              ) : logs.length === 0 ? (
+                <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+                  <Activity className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900">No Logs Found</h3>
+                  <p className="text-gray-500">There are no call records for this number while assigned to you.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {logs.map((log) => (
+                    <div key={log.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                      <div 
+                        className="p-4 cursor-pointer hover:bg-gray-50 flex items-center justify-between"
+                        onClick={() => setExpandedLogId(expandedLogId === log.id ? null : log.id)}
+                      >
+                        <div className="flex items-center gap-6">
+                          <div>
+                            <p className="text-xs text-gray-500 font-medium">DATE</p>
+                            <p className="text-sm font-semibold">{new Date(log.createdAt).toLocaleString()}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 font-medium">FROM</p>
+                            <p className="text-sm">{log.from}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 font-medium">TO</p>
+                            <p className="text-sm">{log.to}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 font-medium">DURATION</p>
+                            <p className="text-sm">{log.totalDuration ? `${log.totalDuration}s` : '-'}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${log.status === 'completed' || log.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                            {log.status.toUpperCase()}
+                          </span>
+                          <span className="text-gray-400">
+                            {expandedLogId === log.id ? '▼' : '▶'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {expandedLogId === log.id && (
+                        <div className="bg-gray-50 p-4 border-t border-gray-200 text-sm">
+                          {log.recordingUrl && (
+                            <div className="mb-6 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+                              <p className="font-semibold text-gray-700 mb-2">Call Recording</p>
+                              <audio controls src={log.recordingUrl} className="w-full h-10" />
+                            </div>
+                          )}
+                          
+                          <p className="font-semibold text-gray-700 mb-3">Internal Call Legs</p>
+                          <div className="space-y-2">
+                            {log.legs?.map((leg: any) => (
+                              <div key={leg.id} className="flex items-center justify-between bg-white p-3 rounded border border-gray-200">
+                                <div className="flex items-center gap-4">
+                                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${leg.direction === 'Inbound' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
+                                    {leg.direction}
+                                  </span>
+                                  <span className="text-gray-600">{leg.from} ➔ {leg.to}</span>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                  <span className="text-gray-500">{leg.duration ? `${leg.duration}s` : '-'}</span>
+                                  <span className="text-gray-400 capitalize">{leg.status}</span>
+                                </div>
+                              </div>
+                            ))}
+                            {(!log.legs || log.legs.length === 0) && (
+                              <p className="text-gray-500 italic">No leg details found.</p>
+                            )}
+                          </div>
+                          
+                          {log.user && (
+                            <div className="mt-4 pt-4 border-t border-gray-200">
+                              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Assigned To</p>
+                              <div className="flex items-center gap-2">
+                                <User className="w-4 h-4 text-gray-400" />
+                                <span className="font-medium text-gray-900">{log.user.name || log.user.email}</span>
+                                <span className="text-gray-500">({log.user.phoneNumber})</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

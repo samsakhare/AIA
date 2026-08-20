@@ -45,6 +45,7 @@ model User {
   tenantId    String?
   tenant      Tenant?        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   twilioNumbers TwilioNumber[]
+  calls         Call[]
 }
 
 model TwilioNumber {
@@ -58,19 +59,44 @@ model TwilioNumber {
   
   userId       String?
   user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  calls        Call[]
   
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
 
 model Call {
-  id             String     @id @default(uuid())
-  tenantId       String
-  tenant         Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  customerNumber String
-  status         CallStatus
+  id             String       @id @default(uuid())
+  tenantId       String?
+  tenant         Tenant?      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  twilioNumberId String?
+  twilioNumber   TwilioNumber? @relation(fields: [twilioNumberId], references: [id], onDelete: SetNull)
+  from           String?
+  to             String?
+  status         String
+  totalDuration  Int?         // in seconds
+  totalCost      Float?
   recordingUrl   String?
   transcript     Json?
   extractedData  Json?
-  createdAt      DateTime   @default(now())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  legs           CallLeg[]
+}
+
+model CallLeg {
+  id        String   @id @default(uuid())
+  callId    String
+  call      Call     @relation(fields: [callId], references: [id], onDelete: Cascade)
+  callSid   String   @unique
+  direction String?
+  from      String?
+  to        String?
+  status    String?
+  duration  Int?
+  cost      Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -2,6 +2,7 @@ import { ITelephonyProvider } from './telephony/ITelephonyProvider';
 import { TwilioProvider } from './telephony/TwilioProvider';
 import { IVoiceAgentProvider } from './voice-ai/IVoiceAgentProvider';
 import { VapiProvider } from './voice-ai/VapiProvider';
+import { MinioProvider } from './storage/MinioProvider';
 
 export class ProviderFactory {
   static getTelephonyProvider(type: 'twilio' | 'plivo' = 'twilio'): ITelephonyProvider {
@@ -20,5 +21,9 @@ export class ProviderFactory {
       default:
         throw new Error('Unsupported voice agent provider');
     }
+  }
+
+  static getStorageProvider(): MinioProvider {
+    return new MinioProvider();
   }
 }

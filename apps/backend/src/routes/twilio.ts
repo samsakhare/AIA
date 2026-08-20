@@ -210,4 +210,41 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
         .send({ error: 'Failed to fetch Twilio quota', details: error.message });
     }
   });
+
+  // Get logs for a specific Twilio number
+  fastify.get('/phone-numbers/:id/logs', async (request, reply) => {
+    try {
+      const decoded = request.user as any;
+      const { id } = request.params as { id: string };
+
+      const twilioNum = await prisma.twilioNumber.findUnique({ where: { id } });
+      if (!twilioNum) {
+        return reply.status(404).send({ error: 'Twilio number not found' });
+      }
+
+      const whereClause: any = { twilioNumberId: id };
+      
+      if (decoded.role !== 'SUPER_ADMIN') {
+        whereClause.userId = decoded.id;
+      }
+
+      const calls = await prisma.call.findMany({
+        where: whereClause,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          legs: {
+            orderBy: { createdAt: 'asc' }
+          },
+          user: { select: { name: true, email: true, phoneNumber: true } }
+        }
+      });
+
+      return reply.send({ logs: calls });
+    } catch (error: any) {
+      request.log.error(error);
+      return reply
+        .status(500)
+        .send({ error: 'Failed to fetch logs', details: error.message });
+    }
+  });
 }

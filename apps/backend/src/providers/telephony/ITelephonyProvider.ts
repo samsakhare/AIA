@@ -7,6 +7,6 @@ export interface ITelephonyProvider {
     webhookUrl: string
   ): Promise<void>;
   dialVoiceAgentIntoConference(conferenceName: string, aiAgentPhoneNumber: string): Promise<void>;
-  dialSipIntoConference(conferenceName: string, sipUri: string, fromNumber: string): Promise<void>;
+  dialSipIntoConference(conferenceName: string, sipUri: string, fromNumber: string, webhookUrl?: string): Promise<void>;
   redirectCall(callSid: string, twiml: string): Promise<void>;
 }

@@ -29,6 +29,11 @@ services:
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/saas_poc
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadminpassword
+      - MINIO_PUBLIC_URL=https://minio.srv1575169.hstgr.cloud
     depends_on:
       - postgres
       - redis
@@ -69,5 +74,24 @@ services:
       - 'traefik.http.routers.aia-dashboard.tls.certresolver=letsencrypt'
       - 'traefik.http.services.aia-dashboard.loadbalancer.server.port=3000'
 
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadminpassword
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - minio_data:/data
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.aia-minio.entrypoints=websecure'
+      - 'traefik.http.routers.aia-minio.rule=Host(`minio.srv1575169.hstgr.cloud`)'
+      - 'traefik.http.routers.aia-minio.tls.certresolver=letsencrypt'
+      - 'traefik.http.services.aia-minio.loadbalancer.server.port=9000'
+
 volumes:
   pgdata:
+  minio_data:
