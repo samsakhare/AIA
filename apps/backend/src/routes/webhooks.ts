@@ -142,7 +142,7 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
       const voiceAi = ProviderFactory.getVoiceAgentProvider();
       const sipUri = process.env.VAPI_ASSISTANT_SIP;
       if (sipUri) {
-        await telephony.dialSipIntoConference(conferenceName, sipUri, customerNumber || '+1234567890', baseUrl);
+        await telephony.dialSipIntoConference(conferenceName, sipUri, customerNumber || '+1234567890', baseUrl, parentCallSid);
       } else {
         await voiceAi.dispatchAgent(conferenceName, {});
       }
@@ -218,12 +218,13 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
   // Generic status callback for API-initiated legs (like the AI SIP dial)
   fastify.post('/twilio/status', async (request, reply) => {
     const { CallSid, ParentCallSid, CallStatus, CallDuration, From, To, Direction } = request.body as any;
+    const resolvedParentCallSid = ParentCallSid || (request.query as any).parentCallSid;
 
     try {
       let leg = await prisma.callLeg.findUnique({ where: { callSid: CallSid } });
       
-      if (!leg && ParentCallSid) {
-        const parentLeg = await prisma.callLeg.findUnique({ where: { callSid: ParentCallSid } });
+      if (!leg && resolvedParentCallSid) {
+        const parentLeg = await prisma.callLeg.findUnique({ where: { callSid: resolvedParentCallSid } });
         if (parentLeg) {
           leg = await prisma.callLeg.create({
             data: {

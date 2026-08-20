@@ -239,6 +239,88 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
         }
       });
 
+      // Auto-sync missing costs/durations for completed calls from Twilio
+      try {
+        const telephony = ProviderFactory.getTelephonyProvider() as any;
+        if (telephony.client) {
+          for (const c of calls) {
+            if ((c.status === 'completed' || c.status === 'COMPLETED') && (c.totalCost === null || c.totalDuration === null)) {
+              const masterLeg = c.legs.find((l: any) => l.direction === 'Inbound' || !l.callId /* fallback */) || c.legs[0];
+              if (masterLeg) {
+                const twilioCall = await telephony.client.calls(masterLeg.callSid).fetch();
+                const twilioLegs = await telephony.client.calls.list({ parentCallSid: masterLeg.callSid });
+                
+                let totalCost = twilioCall.price ? Math.abs(parseFloat(twilioCall.price)) : null;
+                
+                // Sync child legs
+                for (const l of c.legs) {
+                  const twCall = l.callSid === masterLeg.callSid ? twilioCall : twilioLegs.find((t: any) => t.sid === l.callSid);
+                  if (twCall) {
+                    const legCost = twCall.price ? Math.abs(parseFloat(twCall.price)) : null;
+                    const legDuration = twCall.duration ? parseInt(twCall.duration) : null;
+                    
+                    await prisma.callLeg.update({
+                      where: { id: l.id },
+                      data: {
+                        status: twCall.status === 'completed' ? 'completed' : l.status,
+                        duration: legDuration ?? l.duration,
+                        cost: legCost ?? l.cost
+                      }
+                    });
+                    l.duration = legDuration ?? l.duration;
+                    l.cost = legCost ?? l.cost;
+                    
+                    if (legCost !== null && l.callSid !== masterLeg.callSid) {
+                      totalCost = (totalCost || 0) + legCost;
+                    }
+                  }
+                }
+
+                // Recover missing legs
+                for (const twCall of twilioLegs) {
+                  if (!c.legs.find((l: any) => l.callSid === twCall.sid)) {
+                    const newLeg = await prisma.callLeg.create({
+                      data: {
+                        callId: c.id,
+                        callSid: twCall.sid,
+                        direction: twCall.direction,
+                        from: twCall.from,
+                        to: twCall.to,
+                        status: twCall.status === 'completed' ? 'completed' : twCall.status,
+                        duration: twCall.duration ? parseInt(twCall.duration) : undefined,
+                        cost: twCall.price ? Math.abs(parseFloat(twCall.price)) : undefined
+                      }
+                    });
+                    c.legs.push(newLeg);
+                    c.legs.sort((a: any, b: any) => a.createdAt.getTime() - b.createdAt.getTime());
+                    if (twCall.price) {
+                      totalCost = (totalCost || 0) + Math.abs(parseFloat(twCall.price));
+                    }
+                  }
+                }
+
+                if (totalCost !== null) {
+                  totalCost = parseFloat(totalCost.toFixed(4));
+                }
+
+                const finalDuration = twilioCall.duration ? parseInt(twilioCall.duration) : c.totalDuration;
+                await prisma.call.update({
+                  where: { id: c.id },
+                  data: {
+                    totalDuration: finalDuration,
+                    totalCost: totalCost
+                  }
+                });
+                c.totalDuration = finalDuration;
+                c.totalCost = totalCost;
+              }
+            }
+          }
+        }
+      } catch (syncErr) {
+        request.log.error({ syncErr }, 'Failed to sync call costs');
+      }
+
       return reply.send({ logs: calls });
     } catch (error: any) {
       request.log.error(error);

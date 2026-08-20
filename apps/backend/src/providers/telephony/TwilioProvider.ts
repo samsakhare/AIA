@@ -44,7 +44,8 @@ export class TwilioProvider implements ITelephonyProvider {
     conferenceName: string,
     sipUri: string,
     fromNumber: string,
-    webhookUrl?: string
+    webhookUrl?: string,
+    parentCallSid?: string
   ): Promise<void> {
     const callArgs: any = {
       to: sipUri,
@@ -52,7 +53,7 @@ export class TwilioProvider implements ITelephonyProvider {
       twiml: `<Response><Dial><Conference>${conferenceName}</Conference></Dial></Response>`
     };
     if (webhookUrl) {
-      callArgs.statusCallback = `${webhookUrl}/twilio/status`;
+      callArgs.statusCallback = `${webhookUrl}/twilio/status${parentCallSid ? `?parentCallSid=${parentCallSid}` : ''}`;
       callArgs.statusCallbackEvent = ['initiated', 'ringing', 'answered', 'completed'];
     }
     await this.client.calls.create(callArgs);
