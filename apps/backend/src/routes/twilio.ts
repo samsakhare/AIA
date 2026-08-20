@@ -3,6 +3,7 @@ import twilio from 'twilio';
 import fs from 'fs';
 import path from 'path';
 import { prisma } from '@saas-poc/shared';
+import { ProviderFactory } from '../providers/ProviderFactory';
 
 export default async function twilioRoutes(fastify: FastifyInstance) {
   // Middleware to check if user is authenticated
