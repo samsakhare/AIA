@@ -319,7 +319,13 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
                 // Recover recording if missing
                 if (!c.recordingUrl) {
                   try {
-                    const recordings = await telephony.client.recordings.list({ callSid: masterLeg.callSid });
+                    let recordings = await telephony.client.recordings.list({ callSid: masterLeg.callSid });
+                    if (!recordings || recordings.length === 0) {
+                      const confs = await telephony.client.conferences.list({ friendlyName: 'conf_' + masterLeg.callSid });
+                      if (confs && confs.length > 0) {
+                        recordings = await telephony.client.recordings.list({ conferenceSid: confs[0].sid });
+                      }
+                    }
                     if (recordings && recordings.length > 0) {
                       const rec = recordings[0];
                       const minio = ProviderFactory.getStorageProvider();
