@@ -40,13 +40,22 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
   fastify.post('/phone-numbers/sync', async (request, reply) => {
     try {
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
+      const apiKey = process.env.TWILIO_API_KEY;
+      const apiSecret = process.env.TWILIO_API_SECRET;
       const authToken = process.env.TWILIO_AUTH_TOKEN;
 
-      if (!accountSid || !authToken) {
-        return reply.status(500).send({ error: 'Twilio credentials not configured' });
+      if (!accountSid) {
+        return reply.status(500).send({ error: 'Twilio Account SID not configured' });
       }
 
-      const client = twilio(accountSid, authToken);
+      let client;
+      if (apiKey && apiSecret) {
+        client = twilio(apiKey, apiSecret, { accountSid });
+      } else if (authToken) {
+        client = twilio(accountSid, authToken);
+      } else {
+        return reply.status(500).send({ error: 'Twilio credentials (API Key or Auth Token) not configured' });
+      }
       const incomingPhoneNumbers = await client.incomingPhoneNumbers.list({ limit: 1000 });
 
       const twilioSids = new Set(incomingPhoneNumbers.map((num) => num.sid));
@@ -129,13 +138,22 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
   fastify.get('/quota', async (request, reply) => {
     try {
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
+      const apiKey = process.env.TWILIO_API_KEY;
+      const apiSecret = process.env.TWILIO_API_SECRET;
       const authToken = process.env.TWILIO_AUTH_TOKEN;
 
-      if (!accountSid || !authToken) {
-        return reply.status(500).send({ error: 'Twilio credentials not configured' });
+      if (!accountSid) {
+        return reply.status(500).send({ error: 'Twilio Account SID not configured' });
       }
 
-      const client = twilio(accountSid, authToken);
+      let client;
+      if (apiKey && apiSecret) {
+        client = twilio(apiKey, apiSecret, { accountSid });
+      } else if (authToken) {
+        client = twilio(accountSid, authToken);
+      } else {
+        return reply.status(500).send({ error: 'Twilio credentials (API Key or Auth Token) not configured' });
+      }
 
       const balanceData = await client.api.v2010.accounts(accountSid).balance.fetch();
       const accountData = await client.api.v2010.accounts(accountSid).fetch();
