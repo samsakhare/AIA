@@ -42,6 +42,14 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
               AI
             </div>
             <Link
+              href="/ai/agents"
+              onClick={onClose}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+            >
+              <Settings className="w-5 h-5" />
+              My Agents
+            </Link>
+            <Link
               href="/ai/phone-numbers"
               onClick={onClose}
               className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
@@ -65,6 +73,25 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
 
         {role === 'SUPER_ADMIN' && (
           <>
+            <div className="px-4 mt-8 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Vapi (AI)
+            </div>
+            <Link
+              href="/ai/templates"
+              onClick={onClose}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+            >
+              <Settings className="w-5 h-5" />
+              AI Templates
+            </Link>
+            <Link
+              href="/ai/agents"
+              onClick={onClose}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+            >
+              <Users className="w-5 h-5" />
+              User Agents
+            </Link>
             <div className="px-4 mt-8 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Twilio
             </div>

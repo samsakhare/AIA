@@ -24,7 +24,7 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
 
     const twilioRecord = await prisma.twilioNumber.findUnique({
       where: { phoneNumber: To },
-      include: { user: true }
+      include: { user: true, activeAgent: true }
     });
 
     const ownerNumber = twilioRecord?.user?.phoneNumber;
@@ -66,8 +66,12 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
       request.log.error({ dbErr }, 'Failed to create Call record');
     }
 
-    // Pass ParentCallSid in the statusCallback URL to easily link the child call
-    const statusCallbackUrl = `${baseUrl}/twilio/owner-answered?conferenceName=${encodeURIComponent(conferenceName)}&amp;customerNumber=${encodeURIComponent(From)}&amp;parentCallSid=${CallSid}`;
+    const vapiAgentId = twilioRecord?.activeAgent?.vapiAgentId;
+    const isHijack = !!vapiAgentId;
+    let statusCallbackUrl = `${baseUrl}/twilio/owner-answered?conferenceName=${encodeURIComponent(conferenceName)}&amp;customerNumber=${encodeURIComponent(From)}&amp;parentCallSid=${CallSid}`;
+    if (isHijack) {
+      statusCallbackUrl += `&amp;hijack=true&amp;vapiAgentId=${encodeURIComponent(vapiAgentId)}`;
+    }
     
     // We add statusCallback for the generic /status to capture leg completion for the dial leg
     // Wait, <Number> statusCallback only triggers on the events we specify.
@@ -97,6 +101,8 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
     const parentCallSid = (request.query as any).parentCallSid;
     const conferenceName = (request.query as any).conferenceName;
     const customerNumber = (request.query as any).customerNumber;
+    const hijack = (request.query as any).hijack === 'true';
+    const vapiAgentId = (request.query as any).vapiAgentId;
     
     // Log the leg status
     if (parentCallSid && childCallSid) {
@@ -124,8 +130,8 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
       }
     }
 
-    // Only hijack on 'answered'
-    if (CallStatus === 'in-progress' && parentCallSid && conferenceName && !hijackedCalls.has(parentCallSid)) {
+    // Only hijack on 'answered' if hijack is true
+    if (CallStatus === 'in-progress' && parentCallSid && conferenceName && hijack && !hijackedCalls.has(parentCallSid)) {
       hijackedCalls.add(parentCallSid);
 
       const protocol = request.headers['x-forwarded-proto'] || 'https';
@@ -140,11 +146,17 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
       await telephony.redirectCall(childCallSid, ownerConferenceTwiML);
 
       const voiceAi = ProviderFactory.getVoiceAgentProvider();
-      const sipUri = process.env.VAPI_ASSISTANT_SIP;
-      if (sipUri) {
+      
+      if (vapiAgentId) {
+        const sipUri = `sip:${vapiAgentId}@sip.vapi.ai?X-Twilio-CallSid=${parentCallSid}`;
         await telephony.dialSipIntoConference(conferenceName, sipUri, customerNumber || '+1234567890', baseUrl, parentCallSid);
       } else {
-        await voiceAi.dispatchAgent(conferenceName, {});
+        const fallbackSipUri = process.env.VAPI_ASSISTANT_SIP;
+        if (fallbackSipUri) {
+          await telephony.dialSipIntoConference(conferenceName, fallbackSipUri, customerNumber || '+1234567890', baseUrl, parentCallSid);
+        } else {
+          await voiceAi.dispatchAgent(conferenceName, {});
+        }
       }
     }
 

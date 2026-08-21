@@ -10,6 +10,9 @@ import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import twilioRoutes from './routes/twilio';
 import dashboardRoutes from './routes/dashboard';
+import vapiAdminRoutes from './routes/vapi-admin';
+import vapiUserRoutes from './routes/vapi-user';
+import vapiWebhookRoutes from './routes/vapi-webhook';
 
 const app = fastify({ logger: true });
 
@@ -17,7 +20,7 @@ app.register(formbody);
 
 app.register(cors, {
   origin: true,
-  methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   strictPreflight: false
 });
@@ -28,6 +31,9 @@ app.register(authRoutes, { prefix: '/auth' });
 app.register(userRoutes, { prefix: '/users' });
 app.register(twilioRoutes, { prefix: '/twilio' });
 app.register(dashboardRoutes, { prefix: '/dashboard' });
+app.register(vapiAdminRoutes, { prefix: '/vapi/admin' });
+app.register(vapiUserRoutes, { prefix: '/vapi/user' });
+app.register(vapiWebhookRoutes, { prefix: '/vapi' });
 
 app.get('/health', async () => {
   return { status: 'ok', timestamp: new Date().toISOString() };

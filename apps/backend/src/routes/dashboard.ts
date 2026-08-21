@@ -41,6 +41,7 @@ export default async function dashboardRoutes(fastify: FastifyInstance) {
         where: whereClause,
         _sum: {
           totalCost: true,
+          vapiCost: true,
           totalDuration: true,
         },
         _count: {
@@ -48,9 +49,11 @@ export default async function dashboardRoutes(fastify: FastifyInstance) {
         },
       });
 
+      const combinedCost = (result._sum.totalCost || 0) + (result._sum.vapiCost || 0);
+
       return reply.send({
         totalCalls: result._count.id || 0,
-        totalCost: result._sum.totalCost || 0,
+        totalCost: combinedCost,
         totalDuration: result._sum.totalDuration || 0,
       });
     } catch (error: any) {

@@ -103,7 +103,7 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Assign a user to a Twilio number
+  // Assign a user to a Twilio number (Super Admin only)
   fastify.put('/phone-numbers/:id/assign', async (request, reply) => {
     const decoded = request.user as any;
     if (decoded.role !== 'SUPER_ADMIN') return reply.status(403).send({ error: 'Forbidden' });
@@ -111,9 +111,16 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
       const { id } = request.params as { id: string };
       const { userId } = request.body as { userId: string | null };
 
+      const existing = await prisma.twilioNumber.findUnique({ where: { id } });
+      let activeAgentId = existing?.activeAgentId;
+
+      if (existing?.userId !== userId) {
+        activeAgentId = null; // Sever the agent link if the user changes
+      }
+
       const updated = await prisma.twilioNumber.update({
         where: { id },
-        data: { userId },
+        data: { userId, activeAgentId },
         include: { user: { select: { id: true, name: true, email: true, phoneNumber: true } } }
       });
 
@@ -121,6 +128,36 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       request.log.error(error);
       return reply.status(500).send({ error: 'Failed to assign user', details: error.message });
+    }
+  });
+
+  // Assign a Vapi Agent to a Twilio number
+  fastify.patch('/phone-numbers/:id/agent', async (request, reply) => {
+    const decoded = request.user as any;
+    try {
+      const { id } = request.params as { id: string };
+      const { activeAgentId } = request.body as { activeAgentId: string | null };
+
+      const phone = await prisma.twilioNumber.findUnique({ where: { id } });
+      if (!phone) return reply.status(404).send({ error: 'Phone number not found' });
+      
+      if (decoded.role !== 'SUPER_ADMIN' && phone.userId !== decoded.id) {
+        return reply.status(403).send({ error: 'Forbidden' });
+      }
+
+      const updated = await prisma.twilioNumber.update({
+        where: { id },
+        data: { activeAgentId },
+        include: { 
+          user: { select: { id: true, name: true, email: true, phoneNumber: true } },
+          activeAgent: true 
+        }
+      });
+
+      return reply.send({ success: true, phone: updated });
+    } catch (error: any) {
+      request.log.error(error);
+      return reply.status(500).send({ error: 'Failed to assign agent', details: error.message });
     }
   });
 
@@ -188,9 +225,11 @@ export default async function twilioRoutes(fastify: FastifyInstance) {
 
         return {
           product: config.product || record.description || record.category,
+          category: record.category,
           channel: config.channel || 'Other',
           freeUnits: freeUnits,
           consumed: consumed,
+          price: parseFloat(record.price) || 0,
           unit: config.unit || record.usageUnit || 'units',
           remaining:
             freeUnits > 0 ? Math.max(0, freeUnits - consumed) : 'Unlimited (Pay-as-you-go)',

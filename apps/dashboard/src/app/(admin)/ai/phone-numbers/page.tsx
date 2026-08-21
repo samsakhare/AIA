@@ -36,10 +36,12 @@ interface TwilioNumber {
   createdAt: string;
   updatedAt: string;
   user: UserData | null;
+  activeAgentId: string | null;
 }
 
 export default function AIPhoneNumbersPage() {
   const [numbers, setNumbers] = useState<TwilioNumber[]>([]);
+  const [agents, setAgents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -53,22 +55,53 @@ export default function AIPhoneNumbersPage() {
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchNumbers();
+    fetchData();
   }, []);
 
-  const fetchNumbers = async () => {
+  const fetchData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/twilio/phone-numbers`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error('Failed to fetch numbers');
-      const data = await res.json();
-      setNumbers(data.phoneNumbers);
+      const [numbersRes, agentsRes] = await Promise.all([
+        fetch(`${API_URL}/twilio/phone-numbers`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_URL}/vapi/user/agents`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+
+      if (numbersRes.ok) {
+        const data = await numbersRes.json();
+        setNumbers(data.phoneNumbers);
+      }
+      
+      if (agentsRes.ok) {
+        const data = await agentsRes.json();
+        setAgents(data.agents || []);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAssignAgent = async (numberId: string, agentId: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/twilio/phone-numbers/${numberId}/agent`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ activeAgentId: agentId || null })
+      });
+      
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.details || data.error || 'Failed to assign agent');
+      }
+      
+      fetchData(); // Refresh the list
+    } catch (err: any) {
+      alert(err.message);
     }
   };
 
@@ -91,7 +124,7 @@ export default function AIPhoneNumbersPage() {
       });
       if (!res.ok) throw new Error('Failed to update phone number');
       
-      await fetchNumbers();
+      await fetchData();
       setEditingPhone(false);
     } catch (err: any) {
       alert(err.message);
@@ -155,6 +188,7 @@ export default function AIPhoneNumbersPage() {
                 <tr className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
                   <th className="px-6 py-4">Phone Number</th>
                   <th className="px-6 py-4">Assigned To</th>
+                  <th className="px-6 py-4">Active Agent</th>
                   <th className="px-6 py-4">Locality</th>
                   <th className="px-6 py-4">Capabilities</th>
                   <th className="px-6 py-4">Status</th>
@@ -175,12 +209,8 @@ export default function AIPhoneNumbersPage() {
                               <User className="w-3.5 h-3.5" />
                             </div>
                             <div className="flex flex-col">
-                              <span className="text-sm font-semibold text-blue-900 leading-tight">
-                                {num.user.name || 'User'}
-                              </span>
-                              <span className="text-xs text-blue-700 leading-tight">
-                                {num.user.phoneNumber}
-                              </span>
+                              <span className="text-xs font-semibold text-blue-900">{num.user.name || 'User'}</span>
+                              <span className="text-[10px] text-blue-600 font-medium">{num.user.phoneNumber}</span>
                             </div>
                           </div>
                           <div className="w-px h-6 bg-blue-200 mx-1"></div>
@@ -193,6 +223,20 @@ export default function AIPhoneNumbersPage() {
                           </button>
                         </div>
                       )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <select
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2 max-w-[200px]"
+                        value={num.activeAgentId || ''}
+                        onChange={(e) => handleAssignAgent(num.id, e.target.value)}
+                      >
+                        <option value="">No Agent (Forward to me)</option>
+                        {agents.map((agent) => (
+                          <option key={agent.id} value={agent.id}>
+                            {agent.name}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                     <td className="px-6 py-4 text-gray-600">
                       {num.locality ? (
