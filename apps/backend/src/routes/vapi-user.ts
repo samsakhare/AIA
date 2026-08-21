@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { prisma } from '@saas-poc/shared';
-import { cloneAgent, updateAgentPrompt, deleteAgent } from '../services/vapi';
+import { cloneAgent, updateAgentPrompt, deleteAgent, getAgent } from '../services/vapi';
 
 export default async function vapiUserRoutes(fastify: FastifyInstance) {
   // Require Auth
@@ -121,7 +121,7 @@ export default async function vapiUserRoutes(fastify: FastifyInstance) {
       const mergedPrompt = `${userAgent.template.masterPrompt || ''}\n\n${userBusinessPrompt || ''}`.trim();
 
       // Update in Vapi
-      await updateAgentPrompt(userAgent.vapiAgentId, mergedPrompt);
+      await updateAgentPrompt(userAgent.vapiAgentId, mergedPrompt, name);
 
       // Update DB
       const updated = await prisma.userAgent.update({
@@ -136,6 +136,58 @@ export default async function vapiUserRoutes(fastify: FastifyInstance) {
     } catch (error: any) {
       request.log.error(error);
       return reply.status(500).send({ error: 'Failed to update agent', details: error.message });
+    }
+  });
+
+  // GET /vapi/agents/:id/sync (JIT sync from Vapi)
+  fastify.get('/agents/:id/sync', async (request, reply) => {
+    try {
+      const decoded = request.user as any;
+      const { id } = request.params as any;
+
+      const userAgent = await prisma.userAgent.findUnique({
+        where: { id },
+        include: { template: true }
+      });
+
+      if (!userAgent) return reply.status(404).send({ error: 'Agent not found' });
+      if (decoded.role !== 'SUPER_ADMIN' && userAgent.userId !== decoded.id) {
+        return reply.status(403).send({ error: 'Forbidden' });
+      }
+
+      // Fetch latest from Vapi
+      const vapiConfig = await getAgent(userAgent.vapiAgentId);
+      
+      const vapiName = vapiConfig.name || userAgent.name;
+      
+      // Extract business prompt from Vapi
+      const messages = vapiConfig.model?.messages || [];
+      const systemMessage = messages.find((m: any) => m.role === 'system')?.content || '';
+      const masterPrompt = userAgent.template.masterPrompt || '';
+      
+      // We assume userBusinessPrompt is whatever comes after masterPrompt
+      // Or if masterPrompt is not found at the start, just take the whole system message
+      let extractedUserPrompt = systemMessage;
+      if (masterPrompt && systemMessage.startsWith(masterPrompt)) {
+        extractedUserPrompt = systemMessage.substring(masterPrompt.length).trim();
+      }
+
+      // Only update if changed to avoid unnecessary DB writes
+      if (vapiName !== userAgent.name || extractedUserPrompt !== userAgent.userBusinessPrompt) {
+        const updated = await prisma.userAgent.update({
+          where: { id },
+          data: { 
+            name: vapiName,
+            userBusinessPrompt: extractedUserPrompt 
+          }
+        });
+        return reply.send({ success: true, agent: updated });
+      }
+
+      return reply.send({ success: true, agent: userAgent });
+    } catch (error: any) {
+      request.log.error(error);
+      return reply.status(500).send({ error: 'Failed to sync agent', details: error.message });
     }
   });
 

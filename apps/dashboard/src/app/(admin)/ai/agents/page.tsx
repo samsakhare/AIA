@@ -21,6 +21,8 @@ export default function UserAgentsPage() {
 
   // Edit Modal
   const [editingAgent, setEditingAgent] = useState<any>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'' | 'syncing' | 'synced' | 'error'>('');
 
   // Admin assigning
   const [isAdmin, setIsAdmin] = useState(false);
@@ -180,10 +182,36 @@ export default function UserAgentsPage() {
     setShowCreateModal(true);
   };
 
-  const openEditModal = (agent: any) => {
+  const openEditModal = async (agent: any) => {
+    // 1. Instantly open UI with local data
     setEditingAgent(agent);
     setAgentName(agent.name);
     setUserBusinessPrompt(agent.userBusinessPrompt || '');
+    
+    // 2. Start JIT Sync
+    setIsSyncing(true);
+    setSyncStatus('syncing');
+    
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/vapi/agents/${agent.id}/sync`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // 3. Update UI if Vapi had fresh data
+        setAgentName(data.agent.name);
+        setUserBusinessPrompt(data.agent.userBusinessPrompt || '');
+        setSyncStatus('synced');
+      } else {
+        setSyncStatus('error');
+      }
+    } catch (error) {
+      console.error("Sync failed", error);
+      setSyncStatus('error');
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   if (loading) return <div className="p-6">Loading...</div>;
@@ -318,14 +346,36 @@ export default function UserAgentsPage() {
       {(showCreateModal || editingAgent) && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-gray-100 bg-gray-50 shrink-0">
-              <h2 className="text-xl font-bold text-gray-900">
-                {editingAgent ? 'Edit Agent Configuration' : 'Configure New Agent'}
-              </h2>
-              <p className="text-sm text-gray-500 mt-1">
-                {editingAgent ? 'Update your business instructions.' : 'Add your business logic to customize this agent.'}
-              </p>
-            </div>
+              <div className="p-6 border-b border-gray-100 bg-gray-50 shrink-0 flex justify-between items-center">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    {editingAgent ? 'Edit Agent Configuration' : 'Configure New Agent'}
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {editingAgent ? 'Update your business instructions.' : 'Add your business logic to customize this agent.'}
+                  </p>
+                </div>
+                {editingAgent && (
+                  <div className="flex items-center gap-2">
+                    {isSyncing ? (
+                      <div className="flex items-center gap-2 text-sm text-amber-600 font-medium px-3 py-1 bg-amber-50 rounded-full animate-pulse border border-amber-200">
+                        <div className="w-2 h-2 rounded-full bg-amber-500" />
+                        Syncing with Vapi...
+                      </div>
+                    ) : syncStatus === 'error' ? (
+                      <div className="flex items-center gap-2 text-sm text-red-600 font-medium px-3 py-1 bg-red-50 rounded-full border border-red-200">
+                        <div className="w-2 h-2 rounded-full bg-red-500" />
+                        Sync Failed
+                      </div>
+                    ) : syncStatus === 'synced' ? (
+                      <div className="flex items-center gap-2 text-sm text-green-600 font-medium px-3 py-1 bg-green-50 rounded-full border border-green-200">
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        Synced
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+              </div>
             
             <form onSubmit={editingAgent ? handleEditAgent : handleCreateAgent} className="flex flex-col flex-1 overflow-hidden">
               <div className="p-6 space-y-5 overflow-y-auto flex-1">
@@ -353,9 +403,10 @@ export default function UserAgentsPage() {
                   <input
                     type="text"
                     required
+                    disabled={isSyncing || isSubmitting}
                     value={agentName}
                     onChange={e => setAgentName(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:bg-gray-50"
                     placeholder="e.g., Front Desk Receptionist"
                   />
                 </div>
@@ -369,10 +420,11 @@ export default function UserAgentsPage() {
                     </p>
                   </div>
                   <textarea
-                    rows={12}
+                    required
+                    disabled={isSyncing || isSubmitting}
                     value={userBusinessPrompt}
                     onChange={e => setUserBusinessPrompt(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    className="w-full border border-gray-300 rounded-lg p-3 h-32 outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm disabled:opacity-50 disabled:bg-gray-50"
                     placeholder="Example: We are 'Sunrise Plumbing'. Our standard dispatch fee is $75. We operate 24/7. Always ask for the caller's address first..."
                   />
                 </div>
@@ -392,13 +444,14 @@ export default function UserAgentsPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+                  disabled={isSyncing || isSubmitting}
+                  className="px-5 py-2.5 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors flex items-center justify-center min-w-[120px] disabled:opacity-50"
                 >
-                  {isSubmitting && (
+                  {isSubmitting ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    editingAgent ? 'Save Changes' : 'Create Agent'
                   )}
-                  {editingAgent ? 'Save Changes' : 'Create Agent'}
                 </button>
               </div>
             </form>

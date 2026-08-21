@@ -76,7 +76,7 @@ export const cloneAgent = async (templateVapiId: string, mergedPrompt: string, n
   return await response.json();
 };
 
-export const updateAgentPrompt = async (vapiId: string, mergedPrompt: string) => {
+export const updateAgentPrompt = async (vapiId: string, mergedPrompt: string, name?: string) => {
   const currentConfig = await getAgent(vapiId);
   
   let messages = currentConfig.model?.messages || [];
@@ -88,15 +88,21 @@ export const updateAgentPrompt = async (vapiId: string, mergedPrompt: string) =>
     messages.push({ role: 'system', content: mergedPrompt });
   }
 
+  const payload: any = {
+    model: {
+      ...currentConfig.model,
+      messages
+    }
+  };
+
+  if (name) {
+    payload.name = name;
+  }
+
   const response = await fetch(`${VAPI_BASE_URL}/assistant/${vapiId}`, {
     method: 'PATCH',
     headers: getHeaders(),
-    body: JSON.stringify({
-      model: {
-        ...currentConfig.model,
-        messages
-      }
-    }),
+    body: JSON.stringify(payload)
   });
   if (!response.ok) throw new Error('Failed to update agent prompt');
   return await response.json();
