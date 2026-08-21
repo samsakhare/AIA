@@ -194,7 +194,7 @@ export default function UserAgentsPage() {
     
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/vapi/agents/${agent.id}/sync`, {
+      const res = await fetch(`${API_URL}/vapi/user/agents/${agent.id}/sync`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
