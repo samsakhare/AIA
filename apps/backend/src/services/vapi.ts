@@ -129,6 +129,28 @@ export const updateAgentPrompt = async (vapiId: string, mergedPrompt: string, na
 };
 
 export const deleteAgent = async (vapiId: string) => {
+  // 1. Fetch all phone numbers/SIP URIs to find any associated with this assistant
+  try {
+    const phonesRes = await fetch(`${VAPI_BASE_URL}/phone-number`, {
+      headers: getHeaders()
+    });
+    if (phonesRes.ok) {
+      const phones = await phonesRes.json();
+      const associatedPhones = phones.filter((p: any) => p.assistantId === vapiId);
+      
+      // Delete each associated SIP URI/phone number
+      for (const phone of associatedPhones) {
+        await fetch(`${VAPI_BASE_URL}/phone-number/${phone.id}`, {
+          method: 'DELETE',
+          headers: getHeaders()
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error cleaning up SIP URIs for agent', vapiId, error);
+  }
+
+  // 2. Delete the actual assistant
   const response = await fetch(`${VAPI_BASE_URL}/assistant/${vapiId}`, {
     method: 'DELETE',
     headers: getHeaders(),
