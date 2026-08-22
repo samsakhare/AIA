@@ -73,7 +73,27 @@ export const cloneAgent = async (templateVapiId: string, mergedPrompt: string, n
     body: JSON.stringify(clonableConfig),
   });
   if (!response.ok) throw new Error('Failed to create cloned agent');
-  return await response.json();
+  const newAssistant = await response.json();
+
+  // 5. Register SIP URI for the new assistant
+  const sipUri = `sip:${newAssistant.id}@sip.vapi.ai`;
+  const sipResponse = await fetch(`${VAPI_BASE_URL}/phone-number`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({
+      provider: 'vapi',
+      sipUri: sipUri,
+      assistantId: newAssistant.id
+    })
+  });
+  
+  if (!sipResponse.ok) {
+    console.error('Failed to register SIP URI for assistant', newAssistant.id);
+    // Note: We don't throw here to avoid failing the whole agent creation, 
+    // but the SIP might not work if this fails.
+  }
+
+  return newAssistant;
 };
 
 export const updateAgentPrompt = async (vapiId: string, mergedPrompt: string, name?: string) => {
