@@ -29,7 +29,7 @@ export class TwilioProvider implements ITelephonyProvider {
     await this.client.calls.create({
       to: ownerNumber,
       from: customerNumber,
-      twiml: `<Response><Dial><Conference startConferenceOnEnter="true" endConferenceOnExit="false">${conferenceName}</Conference></Dial></Response>`,
+      twiml: `<Response><Dial><Conference startConferenceOnEnter="true" endConferenceOnExit="false" waitUrl="">${conferenceName}</Conference></Dial></Response>`,
       statusCallback: callbackUrl,
       statusCallbackEvent: ['answered']
     });
@@ -50,7 +50,7 @@ export class TwilioProvider implements ITelephonyProvider {
     const callArgs: any = {
       to: sipUri,
       from: fromNumber,
-      twiml: `<Response><Dial><Conference>${conferenceName}</Conference></Dial></Response>`
+      twiml: `<Response><Dial><Conference waitUrl="">${conferenceName}</Conference></Dial></Response>`
     };
     if (webhookUrl) {
       callArgs.statusCallback = `${webhookUrl}/twilio/status${parentCallSid ? `?parentCallSid=${parentCallSid}` : ''}`;

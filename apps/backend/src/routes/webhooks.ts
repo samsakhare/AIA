@@ -86,7 +86,7 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
       .type('text/xml')
       .send(`
         <Response>
-          <Dial callerId="${To}" answerOnBridge="true" action="${baseUrl}/twilio/dial-action">
+          <Dial callerId="${To}" action="${baseUrl}/twilio/dial-action">
             <Number statusCallback="${statusCallbackUrl}" statusCallbackEvent="initiated ringing answered completed">
               ${ownerNumber}
             </Number>
@@ -143,7 +143,7 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
       
       // Update the owner to be in the conference, AND start recording the conference!
       const recordingCallbackUrl = `${baseUrl}/twilio/recording-ready?parentCallSid=${parentCallSid}`;
-      const ownerConferenceTwiML = `<Response><Dial><Conference startConferenceOnEnter="true" endConferenceOnExit="false" record="record-from-start" recordingStatusCallback="${recordingCallbackUrl}" recordingStatusCallbackEvent="completed">${conferenceName}</Conference></Dial></Response>`;
+      const ownerConferenceTwiML = `<Response><Dial><Conference startConferenceOnEnter="true" endConferenceOnExit="false" record="record-from-start" recordingStatusCallback="${recordingCallbackUrl}" recordingStatusCallbackEvent="completed" waitUrl="">${conferenceName}</Conference></Dial></Response>`;
       await telephony.redirectCall(childCallSid, ownerConferenceTwiML);
 
       const voiceAi = ProviderFactory.getVoiceAgentProvider();
@@ -180,7 +180,7 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
         .send(`
           <Response>
             <Dial action="${baseUrl}/twilio/master-conference-end">
-              <Conference startConferenceOnEnter="true" endConferenceOnExit="true">${conferenceName}</Conference>
+              <Conference startConferenceOnEnter="true" endConferenceOnExit="true" waitUrl="">${conferenceName}</Conference>
             </Dial>
           </Response>
         `);
