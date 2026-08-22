@@ -98,11 +98,12 @@ export default async function webhookRoutes(fastify: FastifyInstance) {
   // Handles both the "answered" trigger for hijacking, and standard status updates for the owner leg
   fastify.post('/twilio/owner-answered', async (request, reply) => {
     const { CallSid: childCallSid, CallStatus, Duration } = request.body as any;
-    const parentCallSid = (request.query as any).parentCallSid;
-    const conferenceName = (request.query as any).conferenceName;
-    const customerNumber = (request.query as any).customerNumber;
-    const hijack = (request.query as any).hijack === 'true';
-    const vapiAgentId = (request.query as any).vapiAgentId;
+    const q = request.query as any;
+    const parentCallSid = q.parentCallSid || q['amp;parentCallSid'];
+    const conferenceName = q.conferenceName || q['amp;conferenceName'];
+    const customerNumber = q.customerNumber || q['amp;customerNumber'];
+    const hijack = (q.hijack || q['amp;hijack']) === 'true';
+    const vapiAgentId = q.vapiAgentId || q['amp;vapiAgentId'];
     
     // Log the leg status
     if (parentCallSid && childCallSid) {
